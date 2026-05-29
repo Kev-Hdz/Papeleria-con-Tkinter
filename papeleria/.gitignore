@@ -1,0 +1,10 @@
+# Entorno virtual
+.papeleria/
+
+# Cache de python
+**/__pycache__/
+*.pyc
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
