@@ -4,12 +4,17 @@ Representa un artículo que se vende en la papelería.
 """
 
 
+from modelos import Categoria
+from modelos import Proveedor
+from modelos import Marca
+
+
 class ProductoPapeleria:
     """Representa un artículo que se vende en la papelería."""
 
-    def __init__(self, id_producto, nombre, categoria, marca, descripcion,
-                 precio_compra, precio_venta, existencia, proveedor, fecha_registro):
-        self.id_producto = id_producto
+    def __init__(self, id_producto, nombre, categoria: Categoria, marca: Marca, descripcion,
+                 precio_compra, precio_venta, existencia, proveedor: Proveedor, fecha_registro):
+        self.id = id_producto
         self.nombre = nombre
         self.categoria = categoria          # objeto Categoria
         self.marca = marca
