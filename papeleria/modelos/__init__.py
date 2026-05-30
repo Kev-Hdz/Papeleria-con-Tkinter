@@ -4,5 +4,6 @@
 from .categoria import Categoria
 from .proveedor import Proveedor
 from .cliente import Cliente
+from .marca import Marca
 from .producto import ProductoPapeleria
 from .venta import DetalleVenta, Venta
