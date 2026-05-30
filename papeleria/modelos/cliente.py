@@ -7,8 +7,8 @@ Representa los datos de un cliente de la papelería.
 class Cliente:
     """Representa los datos de un cliente."""
 
-    def __init__(self, id_cliente, nombre, telefono="", correo=""):
-        self.id_cliente = id_cliente
+    def __init__(self, id, nombre, telefono="", correo=""):
+        self.id = id
         self.nombre = nombre
         self.telefono = telefono
         self.correo = correo
