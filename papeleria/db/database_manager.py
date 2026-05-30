@@ -13,7 +13,7 @@ class DatabaseManager:
 
         self.connection = mysql.connector.connect(**self.config)
         self.cursor = self.connection.cursor(dictionary=True)
-        return self
+        return self.cursor
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Asegurar el cierre de la conexion al salir del bloque with."""
