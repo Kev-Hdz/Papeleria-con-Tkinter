@@ -1,5 +1,4 @@
 from datetime import datetime
-from modelos import Cliente
 from modelos import DetalleVenta
 
 class Venta:
@@ -15,30 +14,41 @@ class Venta:
     
     """
 
-    def __init__(self, fecha_venta: datetime, cliente: Cliente = None, id: int | None = None):
+    def __init__(self, fecha_venta: datetime, id_cliente: int = None, id: int | None = None):
         self.id = id
         self.fecha_venta = fecha_venta
-        self.cliente = cliente              # objeto Cliente o None
+        self.id_cliente = id_cliente              # ID del cliente o None
         self.detalles = []                  # lista de DetalleVenta
-        self.total = 0.0
-
+    
     def agregar_detalle(self, detalle: DetalleVenta):
         """
-        Agrega un DetalleVenta y recalcula el total.
+        Agrega un detalle de venta a la venta y actualiza el total.
+        
         Args:
-            detalle (DetalleVenta): Detalle de la venta a agregar.
+            detalle (DetalleVenta): Detalle de venta a agregar.
         """
         self.detalles.append(detalle)
-        self.calcular_total()
-
-    def calcular_total(self):
+  
+    @property
+    def total(self):
         """
-        Calcula el total sumando todos los subtotales de los detalles.
+        Calcula el total de la venta sumando el subtotal de cada detalle.
+        
         Returns:
-            float: El total de la venta.
+            float: Total de la venta.
         """
-        self.total = sum(d.subtotal for d in self.detalles)
-        return self.total
-
-    def __str__(self):
-        return f"Venta #{self.id} - ${self.total:.2f}"
+        return sum(detalle.subtotal for detalle in self.detalles)
+        
+    
+    
+    def validad_venta(self):
+        """
+        Confirma la venta, asegurándose de que tenga al menos un detalle y un total mayor a cero.
+        
+        Raises:
+            ValueError: Si la venta no tiene detalles o el total es cero o negativo.
+        """
+        if not self.detalles:
+            raise ValueError("La venta debe tener al menos un detalle.")
+        if self.total <= 0:
+            raise ValueError("El total de la venta debe ser mayor a cero.")

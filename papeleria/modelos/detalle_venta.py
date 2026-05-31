@@ -1,29 +1,29 @@
 from datetime import datetime
-from modelos import ProductoPapeleria
 
 class DetalleVenta:
     """
     Representa una línea de producto dentro de una venta.
     
     Args:
-        producto (ProductoPapeleria): El producto vendido.
+        producto_id (int): El ID del producto vendido.
         cantidad (int): La cantidad vendida.
         precio_unitario (float): El precio unitario al momento de la venta.
         subtotal (float): El subtotal calculado como cantidad * precio_unitario.
 
     """
 
-    def __init__(self, producto: ProductoPapeleria, cantidad: int, precio_unitario: float, id: int | None = None):
+    def __init__(self, producto_id: int, cantidad: int, precio_unitario: float, id: int | None = None):
         self.id = id
-        self.producto = producto            # objeto ProductoPapeleria
+        self.producto_id = producto_id
         self.cantidad = int(cantidad)
         self.precio_unitario = float(precio_unitario)
-        self.subtotal = self.calcular_subtotal()
-
-    def calcular_subtotal(self):
+        
+    @property
+    def subtotal(self):
         """
-        Calcula el subtotal multiplicando cantidad por precio unitario.
+        Calcula el subtotal de este detalle de venta.
+        
         Returns:
-            float: El subtotal de la línea de venta.
+            float: El subtotal calculado como cantidad * precio_unitario.
         """
         return self.cantidad * self.precio_unitario
