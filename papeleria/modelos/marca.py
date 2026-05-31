@@ -1,6 +1,13 @@
 
 class Marca:
-    def __init__(self, id: int, nombre: str):
+    """
+    Clase que representa una marca de producto.
+    
+    Args:
+        id (int): Identificador único de la marca.
+        nombre (str): Nombre de la marca.
+    """
+    def __init__(self, nombre: str, id: int | None = None):
         self.id = id
         self.nombre = nombre
 
