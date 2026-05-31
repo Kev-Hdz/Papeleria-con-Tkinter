@@ -1,33 +1,18 @@
-
 from datetime import datetime
-
-from modelos import Categoria
-from modelos import Proveedor
-from modelos import Marca
-
 
 class ProductoPapeleria:
     """
     Representa un artículo que se vende en la papelería.
     
     Args:
-        id (int): Identificador único del producto.
-        nombre (str): Nombre del producto.
-        categoria (Categoria): Objeto Categoria al que pertenece el producto.
-        marca (Marca): Objeto Marca a la que pertenece el producto.
-        descripcion (str): Descripción del producto.
-        precio_compra (float): Precio de compra del producto.
-        precio_venta (float): Precio de venta del producto.
-        existencia (int): Cantidad disponible del producto.
-        proveedor (Proveedor): Objeto Proveedor que suministra el producto.
-        fecha_registro (datetime): Fecha de registro del producto.
+        
     
     Raises:
         ValueError: Si los precios son negativos o si la existencia es negativa.
     """
 
-    def __init__(self, id: int, nombre: str, categoria: Categoria, marca: Marca, descripcion: str,
-                 precio_compra: float, precio_venta: float, existencia: int, proveedor: Proveedor, fecha_registro: datetime):
+    def __init__(self, id: int, nombre: str, id_categoria: int, id_marca: int, descripcion: str,
+                 precio_compra: float, precio_venta: float, existencia: int, id_proveedor: int, fecha_registro: datetime):
         
         if precio_compra < 0 or precio_venta < 0:
             raise ValueError("Los precios no pueden ser negativos.")
@@ -36,18 +21,18 @@ class ProductoPapeleria:
 
         self.id = id
         self.nombre = nombre
-        self.categoria = categoria          # objeto Categoria
-        self.marca = marca
+        self.id_categoria = id_categoria
+        self.id_marca = id_marca
         self.descripcion = descripcion
         
         self._precio_compra = float(precio_compra)
         self._precio_venta = float(precio_venta)
         self._existencia = int(existencia)
         
-        self.proveedor = proveedor          # objeto Proveedor
+        self.id_proveedor = id_proveedor          # ID del proveedor
         self.fecha_registro = fecha_registro
         
-    def registrar_venta(self, cantidad: int) -> None:
+    def descontar_existencia(self, cantidad: int) -> None:
         """
         Registra una venta del producto, actualizando la existencia.
         
