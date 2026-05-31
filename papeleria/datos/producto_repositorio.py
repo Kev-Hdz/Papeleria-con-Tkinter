@@ -1,104 +1,29 @@
 from db import DatabaseManager
-from modelos import  Categoria, Marca, Proveedor, ProductoPapeleria
+from modelos import  ProductoPapeleria
 
 class ProductoRepositorio:
     """Repositorio para manejar operaciones relacionadas con productos en la base de datos.
     Args:
         db_config (dict): Configuración de la base de datos.
     """
-    # Centralizamos la consulta base para no repetirla
-    _BASE_QUERY = """
-        SELECT 
-            p.id_producto, 
-            p.nombre AS nombre_producto, 
-            p.descripcion AS descripcion_producto,
-            p.precio_compra, 
-            p.precio_venta, 
-            p.existencia, 
-            p.fecha_registro,
-            c.id_categoria, 
-            c.nombre_categoria,
-            m.id_marca, 
-            m.nombre_marca,
-            pr.id_proveedor,
-            pr.nombre AS nombre_proveedor,
-            pr.telefono AS telefono_proveedor,
-            pr.correo AS correo_proveedor,
-            pr.direccion AS direccion_proveedor 
-        FROM productos p
-        INNER JOIN categorias c ON p.id_categoria = c.id_categoria
-        LEFT JOIN  marcas m ON p.id_marca = m.id_marca
-        LEFT JOIN  proveedores pr ON p.id_proveedor = pr.id_proveedor
-    """
-
+    
     def __init__(self, db_config):
         self.db_config = db_config
-
-    def _mapear_producto(self, fila: dict) -> ProductoPapeleria:
-        """
-        Método privado para centralizar la lógica de mapeo de la base de datos al Dominio.
-        Args:
-            fila (dict): Un diccionario con los datos de la consulta.
-        """
-        return ProductoPapeleria(
-            id=fila['id_producto'],
-            nombre=fila['nombre_producto'],
-            categoria=Categoria(id=fila['id_categoria'], nombre=fila['nombre_categoria']),
-            
-            # Se reincorpora la validación de nulos según el script de BD
-            marca=Marca(id=fila['id_marca'], nombre=fila['nombre_marca']) if fila['id_marca'] else None,
-            
-            descripcion=fila['descripcion_producto'],
-            precio_compra=fila['precio_compra'],
-            precio_venta=fila['precio_venta'],
-            existencia=fila['existencia'],
-            
-            # Se reincorpora la validación de nulos según el script de BD
-            proveedor=Proveedor(
-                id=fila['id_proveedor'], 
-                nombre=fila['nombre_proveedor'], 
-                telefono=fila['telefono_proveedor'], 
-                correo=fila['correo_proveedor'], 
-                direccion=fila['direccion_proveedor']
-            ) if fila['id_proveedor'] else None,
-            
-            fecha_registro=fila['fecha_registro']
-        )
       
-    def obtener_todos(self):
-        """
+    def obtener_todos(self) -> list[dict]:
+        """ 
         Obtiene todos los productos de la base de datos.
         Returns:
-            List[ProductoPapeleria]: Una lista de objetos ProductoPapeleria.
-        Raises:
-            Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
-        """ 
-        with DatabaseManager(self.db_config) as cursor:
-            cursor.execute(self._BASE_QUERY)
-            # Usamos el helper para mapear cada fila
-            return [self._mapear_producto(fila) for fila in cursor.fetchall()]
-    
-    def obtener_por_id(self, id: int):
-        """
-        Obtiene un producto por su ID. 
-        Args:
-            id (int): El ID del producto a obtener.
-        Returns:
-            ProductoPapeleria: El objeto ProductoPapeleria si se encuentra, None en caso contrario.
+            List[dict]: Una lista de diccionarios con los datos de cada producto.
         Raises:
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
-        query = self._BASE_QUERY + " WHERE p.id_producto = %s;"
-        
         with DatabaseManager(self.db_config) as cursor:
-            cursor.execute(query, (id,))
-            fila = cursor.fetchone()
-            
-            if fila:
-                return self._mapear_producto(fila)
-            return None
-
-    def agregar(self, producto: ProductoPapeleria):
+            cursor.execute("SELECT * FROM productos;")
+            return cursor.fetchall()  # Retorna una lista de diccionarios con los datos de cada producto
+                
+                
+    def agregar(self, producto: ProductoPapeleria) -> None:
         """
         Agrega un nuevo producto a la base de datos.
         Args:
@@ -108,16 +33,80 @@ class ProductoRepositorio:
         """
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute(
-                "INSERT INTO productos (nombre, id_categoria, id_marca, descripcion, precio_compra, precio_venta, existencia, id_proveedor, fecha_registro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);",
-                (
-                    producto.nombre, 
-                    producto.categoria.id, 
-                    producto.marca.id if producto.marca else None, 
-                    producto.descripcion, 
-                    producto.precio_compra, 
-                    producto.precio_venta, 
-                    producto.existencia, 
-                    producto.proveedor.id if producto.proveedor else None, 
-                    producto.fecha_registro
-                ) 
+                "INSERT INTO productos (nombre, id_categoria, id_marca, descripcion, precio_compra, precio_venta, existencia, id_proveedor, fecha_registro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) ;",
+                (producto.nombre, producto.id_categoria, producto.id_marca, producto.descripcion,
+                 producto._precio_compra, producto._precio_venta, producto._existencia,
+                 producto.id_proveedor, producto.fecha_registro)
             )
+    def actualizar(self, id: int, producto: ProductoPapeleria) -> None:
+        """
+        Actualiza un producto existente en la base de datos.
+        Args:
+            id (int): El ID del producto a actualizar.
+            producto (ProductoPapeleria): El producto con los nuevos datos.
+        Raises:
+            Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
+        """
+        with DatabaseManager(self.db_config) as cursor:
+            cursor.execute(
+                "UPDATE productos SET nombre = %s, id_categoria = %s, id_marca = %s, descripcion = %s, precio_compra = %s, precio_venta = %s, existencia = %s, id_proveedor = %s, fecha_registro = %s WHERE id = %s;",
+                (producto.nombre, producto.id_categoria, producto.id_marca, producto.descripcion,
+                 producto._precio_compra, producto._precio_venta, producto._existencia,
+                 producto.id_proveedor, producto.fecha_registro, id)
+            )
+            
+    def eliminar(self, id: int) -> None:
+        """
+        Elimina un producto de la base de datos.
+        Args:
+            id (int): El ID del producto a eliminar.
+        Raises:
+            Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
+        """
+        with DatabaseManager(self.db_config) as cursor:
+            cursor.execute("DELETE FROM productos WHERE id = %s;", (id,))
+    
+    def buscar(self, filtros: dict):
+        """
+        Busca productos en la base de datos según los filtros proporcionados.
+        Args:
+            filtros (dict): Un diccionario con los campos y valores a filtrar (ejemplo: {"nombre": "cuaderno", "id_categoria": 2}).
+        Returns:
+            List[dict]: Una lista de diccionarios con los datos de los productos que coinciden con los filtros.
+        Raises:
+            Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
+        """
+        with DatabaseManager(self.db_config) as cursor:
+            query = "SELECT * FROM productos WHERE "
+            conditions = []
+            values = []
+            for campo, valor in filtros.items():
+                if campo == "nombre":
+                    conditions.append(f"{campo} ILIKE %s")
+                    values.append(f"%{valor}%")  # Búsqueda parcial para el nombre
+                elif campo in ["id_categoria", "id_marca", "id_proveedor"]:
+                    conditions.append(f"{campo} = %s")
+                    values.append(valor)
+                elif campo == "fecha_registro":
+                    conditions.append(f"{campo}::date = %s")
+                    values.append(valor)
+            if not conditions:
+                return []  # Retorna una lista vacía si no se proporcionan filtros válidos
+            query += " AND ".join(conditions) + ";"
+            cursor.execute(query, tuple(values))
+            return cursor.fetchall()
+    
+    def buscar_por_id(self, id: int) -> dict | None:
+        """
+        Busca un producto en la base de datos por su ID.
+        Args:
+            id (int): El ID del producto a buscar.
+        Returns:
+            dict | None: Un diccionario con los datos del producto si se encuentra, o None si no se encuentra.
+        Raises:
+            Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
+        """
+        with DatabaseManager(self.db_config) as cursor:
+            cursor.execute("SELECT * FROM productos WHERE id = %s;", (id,))
+            resultado = cursor.fetchone()
+            return ProductoPapeleria(**resultado) if resultado else None
