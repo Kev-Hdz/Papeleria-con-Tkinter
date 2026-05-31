@@ -6,4 +6,5 @@ from .proveedor import Proveedor
 from .cliente import Cliente
 from .marca import Marca
 from .producto import ProductoPapeleria
-from .venta import DetalleVenta, Venta
+from .detalle_venta import DetalleVenta
+from .venta import  Venta
