@@ -1,5 +1,4 @@
 from db import DatabaseManager
-from modelos import Categoria
 
 class CategoriaRepositorio:
     """
@@ -9,46 +8,29 @@ class CategoriaRepositorio:
     def __init__(self, db_config):
         self.db_config = db_config
         
-    def obtener_todos(self):
+    def obtener_todos(self) -> list[dict]:
         """
         Obtiene todas las categorías de la base de datos.
         Returns:
-            List[Categoria]: Una lista de objetos Categoria.
+            List[dict]: Una lista de diccionarios con los datos de cada categoría.
         Raises:
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
         
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute("SELECT * FROM categorias ORDER BY id_categoria ASC")
-            filas = cursor.fetchall()
-            return [Categoria(id=fila['id_categoria'], nombre=fila['nombre_categoria']) for fila in filas]
+            return cursor.fetchall()  # Retorna una lista de diccionarios con los datos de cada categoría
 
-    def obtener_por_id(self, id: int):
-        """
-        Obtiene una categoría por su ID.
-        Args:
-            id (int): El ID de la categoría a obtener.
-        Returns:
-            Categoria: El objeto Categoria si se encuentra, None en caso contrario.
-        Raises:
-            Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
-        """
-        with DatabaseManager(self.db_config) as cursor:
-            cursor.execute("SELECT * FROM categorias WHERE id_categoria = %s", (id,))
-            fila = cursor.fetchone()
-            if fila:
-                return Categoria(id=fila['id_categoria'], nombre=fila['nombre_categoria'])
-            return None
-        
-    def agregar(self, categoria: Categoria):
+    def agregar(self, nombre) -> int:
         """
         Agrega una nueva categoría a la base de datos.
         Args:
-            categoria (Categoria): El objeto Categoria a agregar. El atributo 'id' se ignora ya que es auto-incremental.
+            nombre (str): El nombre de la categoría a agregar.
+        Returns:
+            int: El ID de la categoría recién agregada.
         Raises:
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
         with DatabaseManager(self.db_config) as cursor:
-            cursor.execute("INSERT INTO categorias (nombre_categoria) VALUES (%s)", (categoria.nombre,))
-            categoria.id = cursor.lastrowid  # Asignar el ID generado al objeto Categoria  
-    
+            cursor.execute("INSERT INTO categorias (nombre_categoria) VALUES (%s)", (nombre,))
+            return cursor.lastrowid  # Retornar el ID generado

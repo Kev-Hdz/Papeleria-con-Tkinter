@@ -1,5 +1,4 @@
 from db import DatabaseManager
-from modelos import Marca
 
 class MarcaRepositorio:
     """
@@ -10,33 +9,26 @@ class MarcaRepositorio:
     def __init__(self, db_config):
         self.db_config = db_config
         
-    def obtener_todos(self):
+    def obtener_todos(self) -> list[dict]:
         """
         Obtiene todas las marcas de la base de datos.
         Returns:
-            List[Marca]: Una lista de objetos Marca.
+            List[dict]: Una lista de diccionarios con los datos de cada marca.
         Raises:
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute("SELECT * FROM marcas")
-            filas = cursor.fetchall()
-            return [Marca(id=fila['id_marca'], nombre=fila['nombre_marca']) for fila in filas]
+            return cursor.fetchall() # Retorna una lista de diccionarios con los datos de cada marca
 
-    def obtener_por_id(self, id: int):
+    def agregar(self, nombre) -> int:
         """
-        Obtiene una marca por su ID.
+        Agrega una nueva marca a la base de datos.
         Args:
-            id (int): El ID de la marca a obtener.
-        Returns:
-            Marca: El objeto Marca si se encuentra, None en caso contrario.
+            nombre (str): El nombre de la marca a agregar.
         Raises:
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
         with DatabaseManager(self.db_config) as cursor:
-            cursor.execute("SELECT * FROM marcas WHERE id_marca = %s", (id,))
-            fila = cursor.fetchone()
-            if fila:
-                return Marca(id=fila['id_marca'], nombre=fila['nombre_marca'])
-            return None
-    
+            cursor.execute("INSERT INTO marcas (nombre_marca) VALUES (%s)", (nombre,))
+            return cursor.lastrowid  # Retornar el ID generado
