@@ -10,7 +10,7 @@ class DetalleVenta:
         cantidad (int): La cantidad vendida.
         precio_unitario (float): El precio unitario al momento de la venta.
         subtotal (float): El subtotal calculado como cantidad * precio_unitario.
-    
+
     """
 
     def __init__(self, producto: ProductoPapeleria, cantidad: int, precio_unitario: float, id: int | None = None):
@@ -21,5 +21,9 @@ class DetalleVenta:
         self.subtotal = self.calcular_subtotal()
 
     def calcular_subtotal(self):
-        """Calcula el subtotal multiplicando cantidad por precio unitario."""
+        """
+        Calcula el subtotal multiplicando cantidad por precio unitario.
+        Returns:
+            float: El subtotal de la línea de venta.
+        """
         return self.cantidad * self.precio_unitario

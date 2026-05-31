@@ -23,12 +23,20 @@ class Venta:
         self.total = 0.0
 
     def agregar_detalle(self, detalle: DetalleVenta):
-        """Agrega un DetalleVenta y recalcula el total."""
+        """
+        Agrega un DetalleVenta y recalcula el total.
+        Args:
+            detalle (DetalleVenta): Detalle de la venta a agregar.
+        """
         self.detalles.append(detalle)
         self.calcular_total()
 
     def calcular_total(self):
-        """Calcula el total sumando todos los subtotales de los detalles."""
+        """
+        Calcula el total sumando todos los subtotales de los detalles.
+        Returns:
+            float: El total de la venta.
+        """
         self.total = sum(d.subtotal for d in self.detalles)
         return self.total
 
