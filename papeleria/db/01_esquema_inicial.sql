@@ -302,4 +302,34 @@ CREATE TABLE detalle_venta (
 
 ); 
 
- 
+INSERT INTO categorias (nombre_categoria) VALUES 
+
+('Cuadernos'), 
+
+('Lápices'), 
+
+('Bolígrafos'), 
+
+('Resaltadores'), 
+
+('Carpetas');
+
+INSERT INTO marcas (nombre_marca) VALUES 
+
+('Marca A'), 
+
+('Marca B'), 
+
+('Marca C'), 
+
+('Marca D'), 
+
+('Marca E');  
+
+INSERT INTO proveedores (nombre, telefono, correo, direccion) VALUES 
+
+('GENERICO', 'NA', 'NA', 'NA');
+
+INSERT INTO clientes (nombre, telefono, correo) VALUES 
+
+('CLIENTE GENERICO', 'NA', 'NA');
