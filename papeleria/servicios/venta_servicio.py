@@ -1,70 +1,41 @@
-from datetime import datetime
-from modelos import Venta, DetalleVenta
+from dtos import VentaDTO
+from datos import VentaRepositorio, ProductoRepositorio
 
 class VentaServicio:
-    """
-    Orquestador del módulo de ventas. 
-    Recibe el carrito de compras de la UI, aplica reglas de negocio usando los modelos
-    de dominio y envía los datos validados al repositorio.
-        - Es el único que conoce los modelos de dominio (Venta, DetalleVenta, ProductoPapeleria).
-        
-    """
-    def __init__(self, venta_repositorio, producto_repositorio):
-        self.venta_repo = venta_repositorio
-        self.producto_repo = producto_repositorio
+    def __init__(self, venta_repositorio: VentaRepositorio, producto_repositorio: ProductoRepositorio):
+        self.venta_repositorio = venta_repositorio
+        self.producto_repositorio = producto_repositorio
 
-  
-    
-    def procesar_venta(self, id_cliente: int | None, carrito: list[dict]) -> int:
-        """
-        Ejecuta la venta.
-        
+    def registrar_nueva_venta(self, venta: VentaDTO) -> None:
+        """Registra una nueva venta, validando que el carrito no esté vacío, que las cantidades sean positivas y que haya stock suficiente.
         Args:
-            id_cliente: El ID del cliente (None si es venta al público en general).
-            carrito: Una lista de diccionarios con los items de la venta.
-                        Ejemplo: [{'producto_id': 1, 'cantidad': 2}, {'producto_id': 5, 'cantidad': 1}]
-        
-        Returns:
-            int: El ID de la venta generada.
+            venta (VentaDTO): Objeto que representa la venta a registrar, incluyendo sus detalles.
+        Raises:
+            ValueError: Si el carrito está vacío, si alguna cantidad es negativa o si no hay stock suficiente para algún producto.
         """
-        # 1. Creamos la venta con los datos básicos (fecha, cliente)
-        nueva_venta = Venta(fecha_venta=datetime.now(), id_cliente=id_cliente)
+        if not venta.detalles:
+            raise ValueError("El carrito no puede estar vacío.")
 
-        # 2. Procesamos cada línea del carrito
-        for item in carrito:
-            producto_id = item['producto_id']
-            cantidad_solicitada = int(item['cantidad'])
+        total_venta = 0.0
+        for item in venta.detalles:
+            if item.cantidad <= 0:
+                raise ValueError(f"La cantidad para {item.nombre} debe ser mayor a cero.")
+            if item.precio_unitario < 0:
+                raise ValueError("El precio unitario no puede ser negativo.")
 
-            producto = self.producto_repo.buscar_por_id(producto_id)
+            producto_db = self.producto_repositorio.buscar_por_id(item.id_producto)
+            if producto_db["existencia"] < item.cantidad:
+                raise ValueError(f"Stock insuficiente para '{item.nombre}'. Quedan {producto_db['existencia']}.")
+        
+            total_venta += item.cantidad * item.precio_unitario
+        venta.total = total_venta
+        self.venta_repositorio.guardar_venta(venta)
+
+    def consultar_ventas(self) -> list[VentaDTO]:
+        """
+        Obtiene el registro histórico de ventas realizadas. Sin detalles, solo la cabecera de cada venta.
             
-            if not producto:
-                raise ValueError(f"El producto con ID {producto_id} no existe o fue eliminado.")
-
-            # Regla de negocio: ¿Hay stock suficiente? 
-            producto.descontar_existencia(cantidad_solicitada)
-
-            detalle = DetalleVenta(
-                producto_id=producto.id,
-                cantidad=cantidad_solicitada,
-                precio_unitario=producto.precio_venta 
-            )
-            
-            # Agregamos el detalle a la venta (la venta recalcula su total sola)
-            nueva_venta.agregar_detalle(detalle)
-
-        # 3. Validamos la venta completa antes de guardarla
-        nueva_venta.validar_venta()
-
-        id_venta_generada = self.venta_repo.guardar_venta(nueva_venta)
-        
-        return id_venta_generada
-
-
-    def obtener_historial(self) -> list[dict]:
-        """
-        Obtiene el historial de ventas para mostrar en la UI.
-        
         Returns:
-            list[dict]: Una lista de diccionarios con la información de cada venta.
+            list[VentaDTO]: Lista de objetos VentaDTO representando las ventas registradas. Sin detalles. Si no hay ventas, devuelve una lista vacía.
         """
-        return self.venta_repo.obtener_todas_las_ventas()
+        return self.venta_repositorio.consultar()
