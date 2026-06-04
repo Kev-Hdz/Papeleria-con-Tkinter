@@ -63,6 +63,7 @@ python main.py
 ```
 
 ## Ejecucion de pruebas
+(Ignora los test, no funcionan)
 Este proyecto cuenta con un conjunto de pruebas para garantizar su estabilidad. Para correr todas las pruebas de la carpeta `tests/`, ejecuta:
 ```bash
 # Si usar pytest
