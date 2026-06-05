@@ -19,15 +19,15 @@ class VentaServicio:
         total_venta = 0.0
         for item in venta.detalles:
             if item.cantidad <= 0:
-                raise ValueError(f"La cantidad para {item.nombre} debe ser mayor a cero.")
+                raise ValueError(f"La cantidad para {item.nombre_producto} debe ser mayor a cero.")
             if item.precio_unitario < 0:
                 raise ValueError("El precio unitario no puede ser negativo.")
 
             producto_db = self.producto_repositorio.buscar_por_id(item.id_producto)
-            if producto_db["existencia"] < item.cantidad:
-                raise ValueError(f"Stock insuficiente para '{item.nombre}'. Quedan {producto_db['existencia']}.")
+            if producto_db.existencia < item.cantidad:
+                raise ValueError(f"Stock insuficiente para '{item.nombre_producto}'. Quedan {producto_db.existencia}.")
         
-            total_venta += item.cantidad * item.precio_unitario
+            total_venta += item.cantidad * float(item.precio_unitario)
         venta.total = total_venta
         self.venta_repositorio.guardar_venta(venta)
 

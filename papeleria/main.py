@@ -4,7 +4,7 @@ from tkinter import SEL, ttk, messagebox
 from config import obtener_config_db
 from datos import ContactoRepositorio, ProductoRepositorio, VentaRepositorio
 from servicios import ContactoServicio, ProductoServicio, VentaServicio
-from vistas import Utilidades, VistaProductos, VistaProveedores, VistaClientes, VistaInicio, VistaVentas
+from vistas import Utilidades, VistaProductos, VistaProveedores, VistaClientes, VistaInicio, VistaVentas, VistaHistorial
 
 
 class AppPapeleria(tk.Tk):
@@ -89,33 +89,38 @@ class AppPapeleria(tk.Tk):
 
     def _construir_vistas(self):
         """Instancia cada vista y la agrega al notebook en el orden exacto del menú."""
+        self.inicializar_vista_inicio()
+        self.inicializar_vista_productos()
+        self.inicializar_vista_proveedores()
+        self.inicializar_vista_clientes()
+        self.inicializar_vista_ventas()
+        self.inicializar_vista_historial()
+        self.notebook.select(0)
         
-        # Índice 0: Inicio
+        # Índices 2 al 5: Placeholders temporales para evitar que el programa crashee
+        
+
+    def inicializar_vista_inicio(self):
         vista_inicio = VistaInicio(self.notebook, self.servicio_producto, self.servicio_contacto)
         self.notebook.add(vista_inicio)
-
-        # Índice 1: Productos
+    def inicializar_vista_productos(self):
         vista_productos = VistaProductos(self.notebook, self.servicio_producto, self.servicio_contacto, self.ui)
         self.notebook.add(vista_productos)
-        
+    def inicializar_vista_proveedores(self):
         vista_proveedores = VistaProveedores(self.notebook, self.servicio_contacto, self.ui)
         self.notebook.add(vista_proveedores)
-        
+    def inicializar_vista_clientes(self):
         vista_clientes = VistaClientes(self.notebook, self.servicio_contacto, self.ui)
-        self.notebook.add(vista_clientes)   
+        self.notebook.add(vista_clientes)
+    def inicializar_vista_ventas(self):
+         vista_ventas = VistaVentas(self.notebook, self.servicio_ventas,self.servicio_producto, self.servicio_contacto, self.ui)
+         self.notebook.add(vista_ventas)
+    def inicializar_vista_historial(self):
+        vista_hist= VistaHistorial(self.notebook,self.servicio_ventas, self.ui)
+        self.notebook.add(vista_hist)
+
         
-        vista_ventas = VistaVentas(self.notebook, self.servicio_ventas,self.servicio_producto, self.servicio_contacto, self.ui)
-        self.notebook.add(vista_ventas)
 
-        # Índices 2 al 5: Placeholders temporales para evitar que el programa crashee
-        nombres_pendientes = ["Historial Ventas"]
-        for nombre in nombres_pendientes:
-            frame_vacio = tk.Frame(self.notebook, bg="#f0f4f8")
-            tk.Label(frame_vacio, text=f"Módulo de {nombre} en construcción...", 
-                     font=("Segoe UI", 14), bg="#f0f4f8").pack(expand=True)
-            self.notebook.add(frame_vacio)
-
-        self.notebook.select(0)
 
     def salir(self):
         if messagebox.askyesno("Salir", "¿Deseas cerrar la aplicación?"):

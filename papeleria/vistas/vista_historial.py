@@ -40,8 +40,8 @@ class VistaHistorial(tk.Frame):
         """Recarga la tabla de ventas con los datos actuales del almacén."""
         for row in self.tabla_ventas.get_children():
             self.tabla_ventas.delete(row)
-        for v in self.almacen.obtener_ventas():
-            cliente = v.cliente.nombre if v.cliente else "— Público general —"
+        for v in self.almacen.consultar_ventas():
+            cliente = v.id_cliente if v.id_cliente else "— Público general —"
             self.tabla_ventas.insert("", "end",
                 values=(v.id_venta, v.fecha_venta, cliente, f"${v.total:.2f}"))
 
@@ -53,13 +53,16 @@ class VistaHistorial(tk.Frame):
         if not seleccion:
             return
         id_venta = int(self.tabla_ventas.item(seleccion[0])["values"][0])
-        venta = next((v for v in self.almacen.ventas if v.id_venta == id_venta), None)
+        ventas = self.almacen.consultar_ventas()
+        venta = next((v for v in ventas if v.id_venta == id_venta), None)
         if not venta:
             return
         for row in self.tabla_detalle.get_children():
             self.tabla_detalle.delete(row)
         for det in venta.detalles:
             self.tabla_detalle.insert("", "end", values=(
-                det.producto.nombre, det.cantidad,
+                det.nombre_producto, det.cantidad,
                 f"${det.precio_unitario:.2f}", f"${det.subtotal:.2f}"
             ))
+    def refrescar_datos(self):
+        self.refrescar()
