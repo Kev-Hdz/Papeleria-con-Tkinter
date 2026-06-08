@@ -17,7 +17,7 @@ class AppPapeleria(tk.Tk):
         self.title("🛒 Sistema de Gestión – Papelería")
         self.geometry("1100x680")
         self.resizable(True, True)
-        self.configure(bg="#f0f4f8")
+       ## self.configure(bg="#F5F5F0")
         
         # 1. Configuración de BD única
         db_config = obtener_config_db()
@@ -33,16 +33,16 @@ class AppPapeleria(tk.Tk):
 
     def crear_interfaz(self):
         """Construye la ventana principal y los contenedores estructurales."""
-        barra = tk.Frame(self, bg="#1a237e", height=55)
+        barra = tk.Frame(self, bg="#b3dee5", height=55, relief="solid", bd=1)
         barra.pack(fill="x")
         tk.Label(barra, text="📚  PAPELERÍA – Sistema de Gestión",
-                 font=("Segoe UI", 16, "bold"), bg="#1a237e", fg="white",
-                 pady=12).pack(side="left", padx=20)
+                 font=("Segoe UI", 16, "bold"), bg="#b3dee5", fg="#000000",
+                 pady=12,).pack(side="left", padx=20)
 
-        contenedor = tk.Frame(self, bg="#f0f4f8")
+        contenedor = tk.Frame(self, bg="#b3dee5")
         contenedor.pack(fill="both", expand=True)
 
-        menu = tk.Frame(contenedor, bg="#283593", width=200)
+        menu = tk.Frame(contenedor, bg="#b3dee5", width=200)
         menu.pack(side="left", fill="y")
         menu.pack_propagate(False)
         self._crear_menu_lateral(menu)
@@ -61,27 +61,27 @@ class AppPapeleria(tk.Tk):
             vista_actual.refrescar_datos()
             
     def _crear_menu_lateral(self, menu):
-        tk.Label(menu, text="Menú", font=("Segoe UI", 12, "bold"),
-                 bg="#283593", fg="#90caf9", pady=15).pack(fill="x")
+        tk.Label(menu, text="Menu", font=("Segoe UI", 12, "bold"),
+                 bg="#b3dee5", fg="#000000", pady=15).pack(fill="x")
 
         opciones = [
-            ("🏠  Inicio",            0),
-            ("📦  Productos",         1),
-            ("🚚  Proveedores",       2),
-            ("👥  Clientes",          3),
-            ("🛒  Nueva Venta",       4),
-            ("📋  Historial Ventas",  5),
+            ("   Inicio",            0),
+            ("   Productos",         1),
+            ("   Proveedores",       2),
+            ("   Clientes",          3),
+            ("   Nueva Venta",       4),
+            ("   Historial Ventas",  5),
         ]
         
         for texto, idx in opciones:
             tk.Button(
                 menu, text=texto, font=("Segoe UI", 11),
-                bg="#283593", fg="white", bd=0, padx=10, pady=12,
-                activebackground="#3949ab", anchor="w", cursor="hand2",
+                bg="#b3dee5", fg="#000000", pady=12,
+                activebackground="#f5f0e8", anchor="center", cursor="hand2", 
                 command=lambda i=idx: self.notebook.select(i)
             ).pack(fill="x")
 
-        tk.Frame(menu, bg="#283593").pack(fill="both", expand=True)
+        tk.Frame(menu, bg="#b3dee5").pack(fill="both", expand=True)
         tk.Button(menu, text="❌  Salir", font=("Segoe UI", 11),
                   bg="#c62828", fg="white", bd=0, padx=10, pady=12,
                   activebackground="#b71c1c", cursor="hand2",

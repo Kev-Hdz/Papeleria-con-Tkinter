@@ -39,3 +39,6 @@ class VentaServicio:
             list[VentaDTO]: Lista de objetos VentaDTO representando las ventas registradas. Sin detalles. Si no hay ventas, devuelve una lista vacía.
         """
         return self.venta_repositorio.consultar()
+    def consultar_detalles_venta(self, id_venta: int):
+     """Obtiene los detalles de una venta específica."""
+     return self.venta_repositorio.consultar_detalles(id_venta)

@@ -16,10 +16,10 @@ class VistaProductos(tk.Frame):
         self.proveedores_ids = {}
         self.categorias_ids = {}
         self.marcas_ids = {}
-        
+        self.config(bg="#F5F5F0")
         # Diccionario maestro para el buscador local
         self.productos_en_memoria = {}
-        
+        self.config(relief="solid",bd=1)
         self._cargar_datos()
         self._construir()
         
@@ -68,7 +68,7 @@ class VistaProductos(tk.Frame):
         buscador_frame = tk.Frame(self, bg="#f0f4f8")
         buscador_frame.pack(fill="x", padx=15, pady=(5, 0))
         
-        tk.Label(buscador_frame, text="🔍 Buscar en tabla:", bg="#f0f4f8", font=("Segoe UI", 9, "bold")).pack(side="left")
+        tk.Label(buscador_frame, text="🔍 Buscar en tabla:", bg="#F5F5F0", font=("Segoe UI", 9, "bold")).pack(side="left")
         self.ent_buscador = tk.Entry(buscador_frame, width=50, font=("Segoe UI", 10))
         self.ent_buscador.pack(side="left", padx=10)
         
@@ -77,39 +77,41 @@ class VistaProductos(tk.Frame):
 
     # ... [_construir_formulario queda exactamente igual a tu código] ...
     def _construir_formulario(self):
-        form = tk.LabelFrame(self, text="Datos del Producto", font=("Segoe UI", 10, "bold"), bg="#f0f4f8", fg="#1a237e", padx=10, pady=8)
+        form = tk.LabelFrame(self, text="Datos del Producto", font=("Segoe UI", 10, "bold"), bg="#F5F5F0", fg="#000000", padx=10, pady=8)
         form.pack(fill="x", padx=15, pady=(5, 3))
 
-        col_izq = tk.Frame(form, bg="#f0f4f8")
+        col_izq = tk.Frame(form, bg="#F5F5F0")
         col_izq.pack(side="left", padx=8)
-        campos = [("Nombre:", "ent_nombre"), ("Precio Compra $:", "ent_precio_compra"),
+        campos = [("ID:", "ent_ID"),("Nombre:", "ent_nombre"), ("Precio Compra $:", "ent_precio_compra"),
                   ("Precio Venta $:", "ent_precio_venta"), ("Existencia:", "ent_existencia")]
         
         for i, (lbl, attr) in enumerate(campos):
-            tk.Label(col_izq, text=lbl, bg="#f0f4f8", font=("Segoe UI", 9)).grid(row=i, column=0, sticky="e", pady=3, padx=4)
+            tk.Label(col_izq, text=lbl, bg="#F5F5F0", font=("Segoe UI", 9)).grid(row=i, column=0, sticky="e", pady=3, padx=4)
             ent = tk.Entry(col_izq, width=22, font=("Segoe UI", 10))
+            if attr == "ent_ID":
+                ent.config(state="readonly")
             ent.grid(row=i, column=1, sticky="w", pady=3)
             setattr(self, attr, ent)
 
-        col_der = tk.Frame(form, bg="#f0f4f8")
+        col_der = tk.Frame(form, bg="#F5F5F0")
         col_der.pack(side="left", padx=8)
 
-        tk.Label(col_der, text="Categoría:", bg="#f0f4f8", font=("Segoe UI", 9)).grid(row=0, column=0, sticky="e", pady=3, padx=4)
+        tk.Label(col_der, text="Categoría:", bg="#F5F5F0", font=("Segoe UI", 9)).grid(row=0, column=0, sticky="e", pady=3, padx=4)
         self.combo_categoria = ttk.Combobox(col_der, width=20, state="readonly", font=("Segoe UI", 10))
         self.combo_categoria["values"] = list(self.categorias_ids.keys())
         self.combo_categoria.grid(row=0, column=1, sticky="w", pady=3)
 
-        tk.Label(col_der, text="Proveedor:", bg="#f0f4f8", font=("Segoe UI", 9)).grid(row=1, column=0, sticky="e", pady=3, padx=4)
+        tk.Label(col_der, text="Proveedor:", bg="#F5F5F0", font=("Segoe UI", 9)).grid(row=1, column=0, sticky="e", pady=3, padx=4)
         self.combo_proveedor = ttk.Combobox(col_der, width=20, state="readonly", font=("Segoe UI", 10))
         self.combo_proveedor["values"] = list(self.proveedores_ids.keys())
         self.combo_proveedor.grid(row=1, column=1, sticky="w", pady=3)
 
-        tk.Label(col_der, text="Marca:", bg="#f0f4f8", font=("Segoe UI", 9)).grid(row=2, column=0, sticky="e", pady=3, padx=4)
+        tk.Label(col_der, text="Marca:", bg="#F5F5F0", font=("Segoe UI", 9)).grid(row=2, column=0, sticky="e", pady=3, padx=4)
         self.combo_marca = ttk.Combobox(col_der, width=20, state="readonly", font=("Segoe UI", 10))
         self.combo_marca["values"] = list(self.marcas_ids.keys())
         self.combo_marca.grid(row=2, column=1, sticky="w", pady=3)
 
-        tk.Label(col_der, text="Descripción:", bg="#f0f4f8", font=("Segoe UI", 9)).grid(row=3, column=0, sticky="ne", pady=3, padx=4)
+        tk.Label(col_der, text="Descripción:", bg="#F5F5F0", font=("Segoe UI", 9)).grid(row=3, column=0, sticky="ne", pady=3, padx=4)
         self.txt_descripcion = tk.Text(col_der, width=22, height=3, font=("Segoe UI", 10))
         self.txt_descripcion.grid(row=3, column=1, rowspan=2, sticky="w", pady=3)
 
@@ -223,7 +225,7 @@ class VistaProductos(tk.Frame):
 
     # ... [_limpiar_campos, _validar_campos y _seleccionar_fila quedan igual] ...
     def _limpiar_campos(self):
-        for attr in ["ent_nombre", "ent_precio_compra", "ent_precio_venta", "ent_existencia"]:
+        for attr in ["ent_ID","ent_nombre", "ent_precio_compra", "ent_precio_venta", "ent_existencia"]:
             getattr(self, attr).delete(0, tk.END)
         self.txt_descripcion.delete("1.0", tk.END)
         self.combo_categoria.set("")
@@ -249,6 +251,8 @@ class VistaProductos(tk.Frame):
             return
         
         # Limpiamos e insertamos
+        self.ent_ID.delete(0,tk.END)
+        self.ent_ID.insert(0,valores[0])
         self.ent_nombre.delete(0, tk.END)
         self.ent_nombre.insert(0, valores[1])
         

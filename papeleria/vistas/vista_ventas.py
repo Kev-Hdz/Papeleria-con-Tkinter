@@ -14,7 +14,7 @@ class VistaVentas(tk.Frame):
         self.servicio_contacto = servicio_contacto
         
         self.ui = utilidades
-        
+        self.config(background="#F5F5F0")
         # Carrito en memoria: Diccionario donde la llave es el nombre del producto 
         # y el valor es el objeto DetalleVentaDTO.
         self.carrito: dict[str, DetalleVentaDTO] = {}
@@ -51,20 +51,20 @@ class VistaVentas(tk.Frame):
 
     def _construir_controles(self):
         form = tk.LabelFrame(self, text="Agregar Artículos", font=("Segoe UI", 10, "bold"),
-                             bg="#f0f4f8", fg="#1a237e", padx=10, pady=10)
+                             bg="#F5F5F0", fg="#000000", padx=10, pady=10)
         form.pack(fill="x", padx=15, pady=5)
 
-        tk.Label(form, text="Cliente:", bg="#f0f4f8").grid(row=0, column=0, sticky="e", padx=5)
+        tk.Label(form, text="Cliente:", bg="#F5F5F0").grid(row=0, column=0, sticky="e", padx=5)
         self.combo_cliente = ttk.Combobox(form, width=30, state="readonly")
         self.combo_cliente.grid(row=0, column=1, sticky="w", padx=5)
         self.combo_cliente["values"] = list(self.clientes_ids.keys())
         
-        tk.Label(form, text="Producto:", bg="#f0f4f8").grid(row=0, column=2, sticky="e", padx=5)
+        tk.Label(form, text="Producto:", bg="#F5F5F0").grid(row=0, column=2, sticky="e", padx=5)
         self.combo_producto = ttk.Combobox(form, width=30, state="readonly")
         self.combo_producto.grid(row=0, column=3, sticky="w", padx=5)
         self.combo_producto["values"] = list(self.productos_disp.keys())
         
-        tk.Label(form, text="Cantidad:", bg="#f0f4f8").grid(row=0, column=4, sticky="e", padx=5)
+        tk.Label(form, text="Cantidad:", bg="#F5F5F0").grid(row=0, column=4, sticky="e", padx=5)
         self.ent_cantidad = tk.Entry(form, width=8)
         self.ent_cantidad.insert(0, "1")
         self.ent_cantidad.grid(row=0, column=5, sticky="w", padx=5)
@@ -72,10 +72,10 @@ class VistaVentas(tk.Frame):
         self.ui.boton(form, "➕ Agregar al Carrito", "#0277bd", self.agregar_al_carrito).grid(row=0, column=6, padx=15)
 
     def _construir_pie(self):
-        pie = tk.Frame(self, bg="#f0f4f8")
+        pie = tk.Frame(self, bg="#F5F5F0")
         pie.pack(fill="x", padx=15, pady=10)
         
-        self.lbl_total = tk.Label(pie, text="Total: $0.00", font=("Segoe UI", 18, "bold"), bg="#f0f4f8", fg="#c62828")
+        self.lbl_total = tk.Label(pie, text="Total: $0.00", font=("Segoe UI", 18, "bold"), bg="#F5F5F0", fg="#c62828")
         self.lbl_total.pack(side="left", padx=10)
         
         self.ui.boton(pie, "✅ Procesar Venta", "#2e7d32", self.procesar_venta).pack(side="right", padx=5)

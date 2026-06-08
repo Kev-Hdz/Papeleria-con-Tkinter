@@ -10,6 +10,7 @@ class VistaTabla(tk.Frame):
         super().__init__(parent, bg="#f0f4f8")
         
         self.pack(fill="both", expand=True)
+        self.config(bg="#F5F5F0")
 
         self.tabla = None
         
@@ -17,9 +18,9 @@ class VistaTabla(tk.Frame):
     def _configurar_estilos(self):
         style = ttk.Style()
         style.configure("Treeview", font=("Segoe UI", 9), rowheight=24,
-                         background="white", fieldbackground="white")
+                          fieldbackground="white", background="#F5F5F0")
         style.configure("Treeview.Heading", font=("Segoe UI", 9, "bold"),
-                         background="#1a237e", foreground="white")
+                         background="#F5F5F0", foreground="white")
         style.map("Treeview", background=[("selected", "#3949ab")])
     def construir(self, columnas, height=8):
         """Construye la tabla con las columnas especificadas."""

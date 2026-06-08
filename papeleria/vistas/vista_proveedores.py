@@ -13,6 +13,7 @@ class VistaProveedores(tk.Frame):
         self.servicio_proveedores = servicio
         self.ui = utilidades
         self.proveedores_en_memoria = {} # Cambiamos a diccionario
+        self.config(bg="#F5F5F0")
         self._construir()
 
     def _construir(self):
@@ -29,10 +30,10 @@ class VistaProveedores(tk.Frame):
         self._rellenar_tabla()
 
     def _construir_buscador(self):
-        buscador_frame = tk.Frame(self, bg="#f0f4f8")
+        buscador_frame = tk.Frame(self, bg="#F5F5F0")
         buscador_frame.pack(fill="x", padx=15, pady=(0, 5))
         
-        tk.Label(buscador_frame, text="🔍 Buscar proveedor:", bg="#f0f4f8", font=("Segoe UI", 9, "bold")).pack(side="left")
+        tk.Label(buscador_frame, text=" Buscar proveedor:", bg="#f0f4f8", font=("Segoe UI", 9, "bold")).pack(side="left")
         self.ent_buscador = tk.Entry(buscador_frame, width=40, font=("Segoe UI", 10))
         self.ent_buscador.pack(side="left", padx=10)
         self.ent_buscador.bind("<KeyRelease>", self._filtrar_tabla)
@@ -40,21 +41,21 @@ class VistaProveedores(tk.Frame):
     def _construir_formulario(self):
         form = tk.LabelFrame(self, text="Datos del Proveedor",
                              font=("Segoe UI", 10, "bold"),
-                             bg="#f0f4f8", fg="#1a237e", padx=10, pady=8)
+                             bg="#F5F5F0", fg="#000000", padx=10, pady=8)
         form.pack(fill="x", padx=15, pady=5)
 
-        col = tk.Frame(form, bg="#f0f4f8")
+        col = tk.Frame(form, bg="#F5F5F0")
         col.pack(side="left", padx=8)
         campos = [("Nombre:", "ent_nombre"), ("Teléfono:", "ent_telefono"),
                   ("Correo:", "ent_correo"), ("Dirección:", "ent_direccion")]
         for i, (lbl, attr) in enumerate(campos):
-            tk.Label(col, text=lbl, bg="#f0f4f8",
+            tk.Label(col, text=lbl, bg="#F5F5F0",
                      font=("Segoe UI", 9)).grid(row=i, column=0, sticky="e", pady=4, padx=4)
             ent = tk.Entry(col, width=30, font=("Segoe UI", 10))
             ent.grid(row=i, column=1, sticky="w", pady=4)
             setattr(self, attr, ent)
 
-        btn_frame = tk.Frame(form, bg="#f0f4f8")
+        btn_frame = tk.Frame(form, bg="#F5F5F0")
         btn_frame.pack(side="left", padx=16, anchor="n", pady=6)
         self.ui.boton(btn_frame, "💾 Registrar Proveedor", "#2e7d32",
                       self.registrar_proveedor).pack(fill="x", pady=3)

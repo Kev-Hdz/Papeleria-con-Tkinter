@@ -13,6 +13,7 @@ class VistaHistorial(tk.Frame):
         super().__init__(parent, bg="#f0f4f8")
         self.almacen = almacen
         self.ui = utilidades
+        self.config(bg="#F5F5F0")
         self._construir()
 
     def _construir(self):
@@ -27,11 +28,16 @@ class VistaHistorial(tk.Frame):
 
         det = tk.LabelFrame(self, text="Detalle de la Venta Seleccionada",
                             font=("Segoe UI", 10, "bold"),
-                            bg="#f0f4f8", fg="#1a237e", padx=8, pady=6)
+                            bg="#f0f4f8", fg="#000000", padx=8, pady=6)
         det.pack(fill="both", expand=True, padx=15, pady=5)
         self.tabla_detalle = self.ui.crear_tabla(
             det, ("Producto", "Cantidad", "Precio Unit.", "Subtotal"), height=5
         )
+        self.tabla_detalle.column("Producto", width=200)
+        self.tabla_detalle.column("Cantidad", width=80)
+        self.tabla_detalle.column("Precio Unit.", width=100)
+        self.tabla_detalle.column("Subtotal", width=100)
+        
         self.refrescar()
 
     # ── Métodos de negocio ───────────────────────────────────────────────────
