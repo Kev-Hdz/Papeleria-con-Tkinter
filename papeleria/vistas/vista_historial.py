@@ -28,7 +28,7 @@ class VistaHistorial(tk.Frame):
 
         det = tk.LabelFrame(self, text="Detalle de la Venta Seleccionada",
                             font=("Segoe UI", 10, "bold"),
-                            bg="#f0f4f8", fg="#000000", padx=8, pady=6)
+                            bg="#F5F5F0", fg="#000000", padx=8, pady=6)
         det.pack(fill="both", expand=True, padx=15, pady=5)
         self.tabla_detalle = self.ui.crear_tabla(
             det, ("Producto", "Cantidad", "Precio Unit.", "Subtotal"), height=5
@@ -59,13 +59,15 @@ class VistaHistorial(tk.Frame):
         if not seleccion:
             return
         id_venta = int(self.tabla_ventas.item(seleccion[0])["values"][0])
-        ventas = self.almacen.consultar_ventas()
-        venta = next((v for v in ventas if v.id_venta == id_venta), None)
-        if not venta:
+        detalles = self.almacen.consultar_detalles_venta(id_venta)
+        
+        #venta = next((v for v in ventas if v.id_venta == id_venta), None)
+        if not detalles:
             return
         for row in self.tabla_detalle.get_children():
             self.tabla_detalle.delete(row)
-        for det in venta.detalles:
+        
+        for det in detalles:
             self.tabla_detalle.insert("", "end", values=(
                 det.nombre_producto, det.cantidad,
                 f"${det.precio_unitario:.2f}", f"${det.subtotal:.2f}"

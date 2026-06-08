@@ -41,11 +41,14 @@ class Utilidades:
         frame.pack(fill="both", expand=True, padx=15, pady=4)
 
         style = ttk.Style()
+        style.theme_use("clam")
+        style.layout("TNotebook.Tab",[])
+        style.configure("TNotebook", tabmargins=[0,0,0,0])
         style.configure("Treeview", font=("Segoe UI", 9), rowheight=24,
                          background="white", fieldbackground="white")
         style.configure("Treeview.Heading", font=("Segoe UI", 9, "bold"),
                          background="#1a237e", foreground="white")
-        style.map("Treeview", background=[("selected", "#3949ab")])
+        style.map("Treeview.Heading", background=[("active", "#1a237e")], foreground=[("active", "white")])
 
         sb = ttk.Scrollbar(frame, orient="vertical")
         sb.pack(side="right", fill="y")
