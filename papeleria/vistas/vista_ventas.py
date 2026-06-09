@@ -1,177 +1,189 @@
-"""
-Vista: VistaVentas
-Módulo gráfico para registrar nuevas ventas, agregar productos al carrito
-y calcular el total automáticamente.
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox
-from modelos import DetalleVenta
 
+from vistas import VistaTabla
+from dtos import VentaDTO, DetalleVentaDTO 
 
 class VistaVentas(tk.Frame):
-    """Frame que contiene el módulo de registro de nueva venta."""
+    """Módulo gráfico para procesar nuevas ventas (Punto de Venta)."""
 
-    def __init__(self, parent, almacen, utilidades, callback_post_venta=None):
+    def __init__(self, parent, servicio_venta, servicio_producto, servicio_contacto, utilidades):
         super().__init__(parent, bg="#f0f4f8")
-        self.almacen = almacen
+        self.servicio_venta = servicio_venta
+        self.servicio_producto = servicio_producto
+        self.servicio_contacto = servicio_contacto
+        
         self.ui = utilidades
-        # Callback que ejecuta AppPapeleria tras registrar una venta
-        # (refresca tabla de productos, tarjetas de inicio, etc.)
-        self.callback_post_venta = callback_post_venta
-        self._detalles = []     # carrito de la venta actual
+        self.config(background="#F5F5F0")
+        # Carrito en memoria: Diccionario donde la llave es el nombre del producto 
+        # y el valor es el objeto DetalleVentaDTO.
+        self.carrito: dict[str, DetalleVentaDTO] = {}
+        
+        # Diccionarios de mapeo para ComboBoxes
+        self.clientes_ids = {}
+        self.productos_disp = {}
+        
+        self.total_venta = 0.0  
+        
+        self._cargar_datos()
         self._construir()
 
+    def _cargar_datos(self):
+        self.clientes_ids.clear()
+        for c in self.servicio_contacto.consultar_clientes():
+            self.clientes_ids[c.nombre] = c.id_cliente
+            
+        self.productos_disp.clear()
+        for p in self.servicio_producto.consultar_productos():
+            if p.existencia > 0: # Solo mostramos lo que tiene stock
+                self.productos_disp[p.nombre] = {"id": p.id_producto, "precio": p.precio_venta, "existencia": p.existencia}
+                
     def _construir(self):
-        self.ui.titulo_seccion(self, "🛒 Nueva Venta")
-        self._construir_selector_cliente()
-        self._construir_selector_producto()
-        self._construir_tabla_carrito()
+        self.ui.titulo_seccion(self, "🛒 Punto de Venta (Nueva Venta)")
+        self._construir_controles()
+        
+        # Tabla para el carrito de compras
+        self.tabla_carrito = VistaTabla(self)
+        self.tabla_carrito.pack(fill="both", expand=True, padx=15, pady=5)
+        self.tabla_carrito.construir(("Producto", "Cantidad", "P. Unitario", "Subtotal"))
+
         self._construir_pie()
 
-    # ── Secciones de la vista ────────────────────────────────────────────────
+    def _construir_controles(self):
+        form = tk.LabelFrame(self, text="Agregar Artículos", font=("Segoe UI", 10, "bold"),
+                             bg="#F5F5F0", fg="#000000", padx=10, pady=10)
+        form.pack(fill="x", padx=15, pady=5)
 
-    def _construir_selector_cliente(self):
-        top = tk.Frame(self, bg="#f0f4f8")
-        top.pack(fill="x", padx=15, pady=5)
-        tk.Label(top, text="Cliente:", bg="#f0f4f8",
-                 font=("Segoe UI", 10)).pack(side="left", padx=4)
-        self.combo_cliente = ttk.Combobox(top, width=28, state="readonly",
-                                          font=("Segoe UI", 10))
-        self.actualizar_combo_clientes()
-        self.combo_cliente.pack(side="left", padx=4)
+        tk.Label(form, text="Cliente:", bg="#F5F5F0").grid(row=0, column=0, sticky="e", padx=5)
+        self.combo_cliente = ttk.Combobox(form, width=30, state="readonly")
+        self.combo_cliente.grid(row=0, column=1, sticky="w", padx=5)
+        self.combo_cliente["values"] = list(self.clientes_ids.keys())
+        
+        tk.Label(form, text="Producto:", bg="#F5F5F0").grid(row=0, column=2, sticky="e", padx=5)
+        self.combo_producto = ttk.Combobox(form, width=30, state="readonly")
+        self.combo_producto.grid(row=0, column=3, sticky="w", padx=5)
+        self.combo_producto["values"] = list(self.productos_disp.keys())
+        
+        tk.Label(form, text="Cantidad:", bg="#F5F5F0").grid(row=0, column=4, sticky="e", padx=5)
+        self.ent_cantidad = tk.Entry(form, width=8)
+        self.ent_cantidad.insert(0, "1")
+        self.ent_cantidad.grid(row=0, column=5, sticky="w", padx=5)
 
-    def _construir_selector_producto(self):
-        sel = tk.LabelFrame(self, text="Agregar Producto",
-                            font=("Segoe UI", 10, "bold"),
-                            bg="#f0f4f8", fg="#1a237e", padx=10, pady=6)
-        sel.pack(fill="x", padx=15, pady=4)
-
-        tk.Label(sel, text="Producto:", bg="#f0f4f8",
-                 font=("Segoe UI", 9)).grid(row=0, column=0, sticky="e", padx=4, pady=4)
-        self.combo_producto = ttk.Combobox(sel, width=28, state="readonly",
-                                           font=("Segoe UI", 10))
-        self.combo_producto.grid(row=0, column=1, padx=4, pady=4)
-        self.combo_producto.bind("<<ComboboxSelected>>", self._mostrar_precio)
-
-        tk.Label(sel, text="Cantidad:", bg="#f0f4f8",
-                 font=("Segoe UI", 9)).grid(row=0, column=2, sticky="e", padx=4)
-        self.ent_cantidad = tk.Entry(sel, width=8, font=("Segoe UI", 10))
-        self.ent_cantidad.grid(row=0, column=3, padx=4)
-
-        tk.Label(sel, text="Precio Unit.:", bg="#f0f4f8",
-                 font=("Segoe UI", 9)).grid(row=0, column=4, sticky="e", padx=4)
-        self.lbl_precio = tk.Label(sel, text="$0.00", width=8,
-                                    bg="#f0f4f8", font=("Segoe UI", 10, "bold"),
-                                    fg="#2e7d32")
-        self.lbl_precio.grid(row=0, column=5, padx=4)
-
-        self.ui.boton(sel, "➕ Agregar", "#1565c0",
-                      self._agregar_detalle).grid(row=0, column=6, padx=10)
-
-        self.actualizar_combo_productos()
-
-    def _construir_tabla_carrito(self):
-        self.tabla = self.ui.crear_tabla(
-            self, ("Producto", "Cant.", "Precio Unit.", "Subtotal"), height=6
-        )
+        self.ui.boton(form, "➕ Agregar al Carrito", "#0277bd", self.agregar_al_carrito).grid(row=0, column=6, padx=15)
 
     def _construir_pie(self):
-        pie = tk.Frame(self, bg="#f0f4f8")
-        pie.pack(fill="x", padx=15, pady=4)
-        self.lbl_total = tk.Label(pie, text="Total:  $0.00",
-                                   font=("Segoe UI", 14, "bold"),
-                                   bg="#f0f4f8", fg="#c62828")
-        self.lbl_total.pack(side="right", padx=10)
+        pie = tk.Frame(self, bg="#F5F5F0")
+        pie.pack(fill="x", padx=15, pady=10)
+        
+        self.lbl_total = tk.Label(pie, text="Total: $0.00", font=("Segoe UI", 18, "bold"), bg="#F5F5F0", fg="#c62828")
+        self.lbl_total.pack(side="left", padx=10)
+        
+        self.ui.boton(pie, "✅ Procesar Venta", "#2e7d32", self.procesar_venta).pack(side="right", padx=5)
+        self.ui.boton(pie, "🗑️ Vaciar Carrito", "#d32f2f", self.vaciar_carrito).pack(side="right", padx=5)
 
-        botones = tk.Frame(self, bg="#f0f4f8")
-        botones.pack(pady=4)
-        self.ui.boton(botones, "✅ Registrar Venta", "#2e7d32",
-                      self.registrar_venta).pack(side="left", padx=8)
-        self.ui.boton(botones, "❌ Cancelar / Limpiar", "#c62828",
-                      self.limpiar_campos).pack(side="left", padx=8)
+    # ── Lógica de Interfaz ───────────────────────────────────────────────────
 
-    # ── Métodos de negocio ───────────────────────────────────────────────────
-
-    def _agregar_detalle(self):
-        """Valida la selección y agrega un producto al carrito de la venta."""
-        idx = self.combo_producto.current()
-        if idx < 0:
-            messagebox.showwarning("Sin producto", "Selecciona un producto.")
+    def agregar_al_carrito(self):
+        producto_nombre = self.combo_producto.get()
+        if not producto_nombre:
+            messagebox.showwarning("Aviso", "Selecciona un producto.")
             return
-        prod = self.almacen.productos[idx]
+            
         try:
-            cant = int(self.ent_cantidad.get())
-            if cant <= 0:
-                raise ValueError
+            cantidad = int(self.ent_cantidad.get())
+            if cantidad <= 0: raise ValueError
         except ValueError:
-            messagebox.showerror("Validación", "La cantidad debe ser un número entero positivo.")
-            return
-        if cant > prod.existencia:
-            messagebox.showerror("Sin existencia",
-                                  f"Solo hay {prod.existencia} unidades disponibles.")
+            messagebox.showerror("Error", "La cantidad debe ser un entero mayor a cero.")
             return
 
-        det = DetalleVenta(prod, cant, prod.precio_venta)
-        self._detalles.append(det)
-        self.tabla.insert("", "end", values=(
-            prod.nombre, cant, f"${prod.precio_venta:.2f}", f"${det.subtotal:.2f}"
-        ))
-        self._actualizar_total()
+        datos_prod = self.productos_disp[producto_nombre]
+        subtotal = cantidad * datos_prod["precio"]
+        
+        if producto_nombre in self.carrito:
+            # Si ya está en el carrito, actualizamos el DTO existente
+            item_dto = self.carrito[producto_nombre]
+            item_dto.cantidad += cantidad
+            item_dto.subtotal += subtotal
+            
+            self.tabla_carrito.actualizar_fila(item_dto.id_producto, (
+                item_dto.nombre_producto, item_dto.cantidad, 
+                f"${item_dto.precio_unitario:.2f}", f"${item_dto.subtotal:.2f}"
+            ))
+        else:
+            # Si es nuevo, instanciamos el DTO
+            item_dto = DetalleVentaDTO(
+                id_producto=datos_prod["id"],
+                nombre_producto=producto_nombre,
+                cantidad=cantidad,
+                precio_unitario=datos_prod["precio"],
+                subtotal=subtotal
+            )
+            self.carrito[producto_nombre] = item_dto
+            
+            # Reflejamos en la UI
+            self.tabla_carrito.agregar_fila(item_dto.id_producto, (
+                item_dto.nombre_producto, item_dto.cantidad, 
+                f"${item_dto.precio_unitario:.2f}", f"${item_dto.subtotal:.2f}"
+            ))
+            
+        self.cacular_total()
         self.ent_cantidad.delete(0, tk.END)
+        self.ent_cantidad.insert(0, "1")
+    
+    def cacular_total(self):
+        # Ahora accedemos al atributo .subtotal del DTO
+        self.total_venta = sum(item_dto.subtotal for item_dto in self.carrito.values())
+        self.lbl_total.config(text=f"Total: ${self.total_venta:.2f}")
+        
+    def vaciar_carrito(self):
+        if messagebox.askyesno("Confirmar", "¿Deseas vaciar el carrito?"):
+            self.carrito.clear()
+            self.tabla_carrito.limpiar_tabla()
+            self.total_venta = 0.0
+            self.lbl_total.config(text="Total: $0.00")
+
+    def refrescar_datos(self):
+        self.tabla_carrito.limpiar_tabla()
+        self._cargar_datos()
+        self.combo_cliente.set("")
         self.combo_producto.set("")
-        self.lbl_precio.config(text="$0.00")
+        self.combo_cliente["values"] = list(self.clientes_ids.keys())
 
-    def registrar_venta(self):
-        """Registra la venta en el almacén, descuenta existencias y limpia el formulario."""
-        if not self._detalles:
-            messagebox.showwarning("Sin productos", "Agrega al menos un producto a la venta.")
-            return
-        idx_cli = self.combo_cliente.current()
-        cliente = self.almacen.clientes[idx_cli - 1] if idx_cli > 0 else None
-
-        venta = self.almacen.registrar_venta(cliente, self._detalles)
-        messagebox.showinfo("Venta registrada",
-                             f"✅ Venta #{venta.id_venta} registrada.\nTotal: ${venta.total:.2f}")
-        self.limpiar_campos()
-
-        if self.callback_post_venta:
-            self.callback_post_venta()
-
-    def limpiar_campos(self):
-        """Limpia el carrito y reinicia el formulario de venta."""
-        self._detalles = []
-        for row in self.tabla.get_children():
-            self.tabla.delete(row)
-        self.lbl_total.config(text="Total:  $0.00")
+        self.combo_producto["values"] = list(self.productos_disp.keys())
         self.ent_cantidad.delete(0, tk.END)
-        self.combo_producto.set("")
-        self.lbl_precio.config(text="$0.00")
-        self.combo_cliente.current(0)
+        self.ent_cantidad.insert(0, "1")
+        self.carrito.clear()
+        self.total_venta = 0.0
+        self.lbl_total.config(text="Total: $0.00")
+    
+    def procesar_venta(self):
+        if not self.carrito:
+            messagebox.showwarning("Aviso", "El carrito está vacío.")
+            return
+            
+        cliente_nombre = self.combo_cliente.get()
+        if not cliente_nombre:
+            messagebox.showwarning("Aviso", "Selecciona un cliente.")
+            return
 
-    def calcular_total(self):
-        """Retorna el total de la venta actual sumando todos los subtotales."""
-        return sum(d.subtotal for d in self._detalles)
+        id_cliente = self.clientes_ids[cliente_nombre]
+        
+        # 1. Empaquetamos la cabecera y los detalles en un solo VentaDTO
+        nueva_venta_dto = VentaDTO(
+            id_cliente=id_cliente,
+            total=self.total_venta,
+            detalles=list(self.carrito.values())
+        )
 
-    # ── Auxiliares ───────────────────────────────────────────────────────────
-
-    def _mostrar_precio(self, event=None):
-        """Muestra el precio de venta del producto seleccionado en el combo."""
-        idx = self.combo_producto.current()
-        if idx >= 0:
-            self.lbl_precio.config(text=f"${self.almacen.productos[idx].precio_venta:.2f}")
-
-    def _actualizar_total(self):
-        self.lbl_total.config(text=f"Total:  ${self.calcular_total():.2f}")
-
-    def actualizar_combo_clientes(self):
-        """Refresca la lista de clientes en el combo."""
-        nombres = ["— Sin cliente —"] + [c.nombre for c in self.almacen.clientes]
-        self.combo_cliente["values"] = nombres
-        self.combo_cliente.current(0)
-
-    def actualizar_combo_productos(self):
-        """Refresca la lista de productos disponibles en el combo."""
-        self.combo_producto["values"] = [
-            f"{p.nombre}  (Exist: {p.existencia})" for p in self.almacen.productos
-        ]
+        try:
+            # 2. Enviamos el objeto estandarizado al servicio
+            self.servicio_venta.registrar_nueva_venta(nueva_venta_dto)
+            messagebox.showinfo("Éxito", "Venta procesada y guardada correctamente.")
+            self.refrescar_datos() 
+            
+        except ValueError as e:
+            # Atrapamos errores de negocio (ej. Falta de stock, cantidades inválidas)
+            messagebox.showwarning("Aviso de Inventario", str(e))
+        except Exception as e:
+            # Atrapamos errores críticos (ej. Caída de base de datos o sintaxis SQL)
+            messagebox.showerror("Error del Sistema", f"Ocurrió un error inesperado al procesar la venta:\n{str(e)}")

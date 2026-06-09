@@ -18,8 +18,8 @@ class Utilidades:
     def titulo_seccion(parent, texto):
         """Muestra un título de sección con línea divisoria azul."""
         tk.Label(parent, text=texto, font=("Segoe UI", 14, "bold"),
-                 bg="#f0f4f8", fg="#1a237e", pady=8).pack(anchor="w", padx=15)
-        tk.Frame(parent, bg="#1a237e", height=2).pack(fill="x", padx=15, pady=(0, 6))
+                 bg="#F5F5F0", fg="#000000", pady=8).pack(anchor="w", padx=15)
+        tk.Frame(parent, bg="#F5F5F0", height=2).pack(fill="x", padx=15, pady=(0, 6))
 
     @staticmethod
     def boton(parent, texto, color, comando):
@@ -36,15 +36,19 @@ class Utilidades:
         Crea un Treeview con scrollbar vertical dentro de un Frame contenedor.
         Retorna el widget Treeview listo para usar.
         """
-        frame = tk.Frame(parent, bg="#f0f4f8")
+        
+        frame = tk.Frame(parent, bg="#F5F5F0")
         frame.pack(fill="both", expand=True, padx=15, pady=4)
 
         style = ttk.Style()
+        style.theme_use("clam")
+        style.layout("TNotebook.Tab",[])
+        style.configure("TNotebook", tabmargins=[0,0,0,0])
         style.configure("Treeview", font=("Segoe UI", 9), rowheight=24,
                          background="white", fieldbackground="white")
         style.configure("Treeview.Heading", font=("Segoe UI", 9, "bold"),
                          background="#1a237e", foreground="white")
-        style.map("Treeview", background=[("selected", "#3949ab")])
+        style.map("Treeview.Heading", background=[("active", "#1a237e")], foreground=[("active", "white")])
 
         sb = ttk.Scrollbar(frame, orient="vertical")
         sb.pack(side="right", fill="y")
