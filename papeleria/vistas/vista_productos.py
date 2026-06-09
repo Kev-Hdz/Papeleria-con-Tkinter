@@ -197,7 +197,10 @@ class VistaProductos(tk.Frame):
             messagebox.showwarning("Aviso", "Selecciona un producto de la tabla.")
             return
 
-        valores = self.tabla.item(id_producto)["values"]
+        valores = self.tabla.obtener_fila_seleccionada()
+        if not valores:
+            return
+        
         nombre_producto = str(valores[1]) # Corregido: Era texto, no int
         
         if messagebox.askyesno("Confirmar", f"¿Eliminar el producto '{nombre_producto}'?\nEsta acción no se puede deshacer."):
@@ -207,7 +210,15 @@ class VistaProductos(tk.Frame):
                 self._limpiar_campos()
                 self.consultar_productos()
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo eliminar: {str(e)}")
+                if "1451" in str(e):
+                    messagebox.showerror("No se puede eliminar", f"El producto {nombre_producto} tiene ventas registradas.\n"
+                                         "No es posible eliminarlo para conservar el historial")
+                else:
+                    messagebox.showerror("Error", f"No se puede eliminar: {str(e)}")
+
+
+
+                
 
     def _leer_campos(self) -> ProductoDTO:
         """Extrae los valores de la UI y los empaqueta en un ProductoDTO."""

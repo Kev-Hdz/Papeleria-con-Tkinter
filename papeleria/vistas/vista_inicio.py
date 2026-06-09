@@ -13,7 +13,7 @@ class VistaInicio(tk.Frame):
 
     def _construir(self):
         tk.Label(self, text="Bienvenido al Sistema de Papelería",
-                 font=("Segoe UI", 20, "bold"), bg="#f0f4f8", fg="#000000").pack(pady=40)
+                 font=("Segoe UI", 20, "bold"), bg="#F5F5F0", fg="#000000").pack(pady=40)
         tk.Label(self, text="Selecciona una opción del menú lateral para comenzar.",
                  font=("Segoe UI", 13), bg="#F5F5F0", fg="#000000").pack()
 
