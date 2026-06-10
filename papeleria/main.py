@@ -61,7 +61,7 @@ class AppPapeleria(tk.Tk):
             vista_actual.refrescar_datos()
             
     def _crear_menu_lateral(self, menu):
-        tk.Label(menu, text="Menu", font=("Segoe UI", 12, "bold"),
+        tk.Label(menu, text="Menu", font=("Segoe UI", 15, "bold"),
                  bg="#b3dee5", fg="#000000", pady=15).pack(fill="x")
 
         opciones = [
@@ -75,7 +75,7 @@ class AppPapeleria(tk.Tk):
         
         for texto, idx in opciones:
             tk.Button(
-                menu, text=texto, font=("Segoe UI", 11),
+                menu, text=texto, font=("Segoe UI", 11, "bold"),
                 bg="#b3dee5", fg="#000000", pady=12,
                 activebackground="#f5f0e8", anchor="center", cursor="hand2", 
                 command=lambda i=idx: self.notebook.select(i)

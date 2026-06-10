@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox
-
 from dtos import ClienteDTO
 from vistas import VistaTabla  
 class VistaClientes(tk.Frame):
@@ -45,22 +44,37 @@ class VistaClientes(tk.Frame):
 
         col = tk.Frame(form, bg="#F5F5F0")
         col.pack(side="left", padx=8)
+        tk.Label(col, text="ID:", bg="#F5F5F0",
+             font=("Segoe UI", 9)).grid(row=0, column=0, sticky="e", pady=4, padx=4)
+        self.ent_ID = tk.Entry(col, width=30, font=("Segoe UI", 10), state="readonly")
+        self.ent_ID.grid(row=0, column=1, sticky="w", pady=4)
         campos = [("Nombre:", "ent_nombre"),
                   ("Teléfono:", "ent_telefono"),
                   ("Correo:", "ent_correo")]
         for i, (lbl, attr) in enumerate(campos):
             tk.Label(col, text=lbl, bg="#F5F5F0",
-                     font=("Segoe UI", 9)).grid(row=i, column=0, sticky="e", pady=4, padx=4)
+                     font=("Segoe UI", 9)).grid(row=i+1, column=0, sticky="e", pady=4, padx=4)
             ent = tk.Entry(col, width=30, font=("Segoe UI", 10))
-            ent.grid(row=i, column=1, sticky="w", pady=4)
+            ent.grid(row=i+1, column=1, sticky="w", pady=4)
             setattr(self, attr, ent)
 
         btn_frame = tk.Frame(form, bg="#f0f4f8")
         btn_frame.pack(side="left", padx=16, anchor="n", pady=6)
-        self.ui.boton(btn_frame, "💾 Registrar Cliente", "#2e7d32",
-                      self.registrar_cliente).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "🧹 Limpiar", "#546e7a",
-                      self.limpiar_campos).pack(fill="x", pady=3)
+        self.btn_registrar = self.ui.boton(btn_frame, "💾 Registrar Cliente", "#2e7d32",
+                      self.registrar_cliente)
+        self.btn_registrar.pack(fill="x", pady=3)
+        self.btn_actualizar= self.ui.boton(btn_frame," Actualizar", "#1565c0", self.actualizar_cliente)
+        self.btn_actualizar.pack(fill="x", pady=3)
+        self.btn_eliminar=self.ui.boton(btn_frame, "Eliminar", "#c62828",self.eliminar_cliente)
+        self.btn_eliminar.pack(fill="x", pady=3)
+        
+
+
+
+
+        self.btn_limpiar = self.ui.boton(btn_frame, "🧹 Limpiar", "#546e7a",
+                      self.limpiar_campos)
+        self.btn_limpiar.pack(fill="x", pady=3)
 
     # ── Métodos de negocio ───────────────────────────────────────────────────
 
@@ -73,10 +87,63 @@ class VistaClientes(tk.Frame):
             messagebox.showinfo("Éxito", f"Cliente '{nuevo_cliente_dto.nombre}' registrado correctamente.")
             self.limpiar_campos()
             self._rellenar_tabla() 
-        except Exception as e:
-            messagebox.showerror("Error del Sistema", str(e))
+        except Exception as error:
+            messagebox.showerror("Error del Sistema", str(error))
+    def actualizar_cliente(self):
+        id_cliente = self.tabla.obtener_id_seleccionado()
+        if id_cliente is None:
+            messagebox.showwarning("Aviso", "Selecciona un cliente de la tabla.")
+            return
+        if not self._validar_campos():
+            return
+        try:
+            dto = self._leer_campos()
+            self.servicio_cliente.actualizar_cliente(int(id_cliente), dto)
+            messagebox.showinfo("Éxito", "Cliente actualizado correctamente.")
+            self.limpiar_campos()
+            self._rellenar_tabla()
+        except Exception as error:
+            messagebox.showerror("Error", str(error))
+    def eliminar_cliente(self):
+        id_cliente = self.tabla.obtener_id_seleccionado()
+        if id_cliente is None:
+            messagebox.showwarning("Aviso", "Selecciona un cliente de la tabla.")
+            return
+
+        valores = self.tabla.obtener_fila_seleccionada()
+        nombre = str(valores[1])
+
+        if messagebox.askyesno("Confirmar", f"¿Eliminar al cliente '{nombre}'?\nEsta acción no se puede deshacer."):
+            try:
+                self.servicio_cliente.eliminar_cliente(int(id_cliente))
+                messagebox.showinfo("Eliminado", "Cliente eliminado correctamente.")
+                self.limpiar_campos()
+                self._rellenar_tabla()
+            except Exception as error:
+                if "1451" in str(error):
+                    messagebox.showerror(
+                    "No se puede eliminar",
+                    f"El cliente '{nombre}' tiene ventas registradas.\n"
+                    "No es posible eliminarlo para conservar el historial."
+                )
+                else:
+                    messagebox.showerror("Error", f"No se pudo eliminar: {str(error)}")
+
+
+
+
+
+
+
+
+
+
 
     def limpiar_campos(self):
+        self.btn_registrar.config(state="normal")  # Habilitamos el botón de registrar al limpiar campos
+        self.ent_ID.config(state="normal")
+        self.ent_ID.delete(0, tk.END)
+        self.ent_ID.config(state="readonly")
         for attr in ["ent_nombre", "ent_telefono", "ent_correo"]:
             getattr(self, attr).delete(0, tk.END)
 
@@ -127,8 +194,12 @@ class VistaClientes(tk.Frame):
         valores = self.tabla.obtener_fila_seleccionada()
         if not valores: 
             return
-        
+       
         self.limpiar_campos()
+        self.btn_registrar.config(state="disabled")  # Deshabilitamos el botón de registrar al seleccionar una fila
+        self.ent_ID.config(state="normal")
+        self.ent_ID.insert(0, valores[0])
+        self.ent_ID.config(state="readonly")
         self.ent_nombre.insert(0, valores[1])
         self.ent_telefono.insert(0, valores[2] if valores[2] != "None" else "")
         self.ent_correo.insert(0, valores[3] if valores[3] != "None" else "")

@@ -43,7 +43,9 @@ class VistaProductos(tk.Frame):
         self._limpiar_campos()
         self.ent_buscador.delete(0, tk.END)
         self._cargar_datos()
-        
+        self.ent_ID.config(state="normal")
+        self.ent_ID.delete(0,tk.END) 
+        self.ent_ID.config(state="readonly")
         # Actualizamos las opciones de los Combobox con los datos frescos
         self.combo_categoria["values"] = list(self.categorias_ids.keys())
         self.combo_proveedor["values"] = list(self.proveedores_ids.keys())
@@ -117,10 +119,14 @@ class VistaProductos(tk.Frame):
 
         btn_frame = tk.Frame(form, bg="#f0f4f8")
         btn_frame.pack(side="left", padx=16, anchor="n", pady=6)
-        self.ui.boton(btn_frame, "💾 Registrar",  "#2e7d32", self.registrar_producto).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "✏️ Actualizar", "#1565c0", self.actualizar_producto).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "🗑️ Eliminar",   "#c62828", self.eliminar_producto).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "🧹 Limpiar",    "#546e7a", self._limpiar_campos).pack(fill="x", pady=3)
+        self.btn_registrar = self.ui.boton(btn_frame, "💾 Registrar",  "#2e7d32", self.registrar_producto)
+        self.btn_registrar.pack(fill="x", pady=3)
+        self.btn_actualizar = self.ui.boton(btn_frame, "✏️ Actualizar", "#1565c0", self.actualizar_producto)
+        self.btn_actualizar.pack(fill="x", pady=3)
+        self.btn_eliminar = self.ui.boton(btn_frame, "🗑️ Eliminar",   "#c62828", self.eliminar_producto)
+        self.btn_eliminar.pack(fill="x", pady=3)
+        self.btn_limpiar = self.ui.boton(btn_frame, "🧹 Limpiar",    "#546e7a", self._limpiar_campos)
+        self.btn_limpiar.pack(fill="x", pady=3)
 
 
     # ── Lógica Central ───────────────────────────────────────────────────────
@@ -197,17 +203,25 @@ class VistaProductos(tk.Frame):
             messagebox.showwarning("Aviso", "Selecciona un producto de la tabla.")
             return
 
-        valores = self.tabla.item(id_producto)["values"]
-        nombre_producto = str(valores[1]) # Corregido: Era texto, no int
+        valores = self.tabla.obtener_fila_seleccionada()
+        nombre_producto = str(valores[1]) # sCorregido: Era texto, no int
         
         if messagebox.askyesno("Confirmar", f"¿Eliminar el producto '{nombre_producto}'?\nEsta acción no se puede deshacer."):
             try:
-                self.servicio_producto.eliminar_producto(id_producto)
+                self.servicio_producto.eliminar_producto(int(id_producto))
                 messagebox.showinfo("Eliminado", "Producto eliminado correctamente.")
                 self._limpiar_campos()
                 self.consultar_productos()
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo eliminar: {str(e)}")
+                if "1451" in str(e):
+                    messagebox.showerror("No se puede eliminar", f"El producto {nombre_producto} tiene ventas registradas.\n"
+                                         "No es posible eliminarlo para conservar el historial")
+                else:
+                    messagebox.showerror("Error", f"No se puede eliminar: {str(e)}")
+
+
+
+                
 
     def _leer_campos(self) -> ProductoDTO:
         """Extrae los valores de la UI y los empaqueta en un ProductoDTO."""
@@ -225,6 +239,7 @@ class VistaProductos(tk.Frame):
 
     # ... [_limpiar_campos, _validar_campos y _seleccionar_fila quedan igual] ...
     def _limpiar_campos(self):
+        self.btn_registrar.config(state="normal")
         for attr in ["ent_ID","ent_nombre", "ent_precio_compra", "ent_precio_venta", "ent_existencia"]:
             getattr(self, attr).delete(0, tk.END)
         self.txt_descripcion.delete("1.0", tk.END)
@@ -250,9 +265,13 @@ class VistaProductos(tk.Frame):
         if not valores:
             return
         
+        self.btn_registrar.config(state="disabled")
         # Limpiamos e insertamos
+        self.ent_ID.config(state="normal")
         self.ent_ID.delete(0,tk.END)
+        print(valores)
         self.ent_ID.insert(0,valores[0])
+        self.ent_ID.config(state="readonly")
         self.ent_nombre.delete(0, tk.END)
         self.ent_nombre.insert(0, valores[1])
         

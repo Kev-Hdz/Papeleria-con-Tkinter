@@ -156,3 +156,33 @@ class ContactoRepositorio:
             cursor.execute("SELECT * FROM clientes WHERE id_cliente = %s;", (id_cliente,))
             row = cursor.fetchone()
             return ClienteDTO(**row) if row else None
+    
+    def actualizar_proveedor(self, id_proveedor: int, proveedor: ProveedorDTO) -> None:
+        with DatabaseManager(self.db_config) as cursor:
+            cursor.execute(
+                """UPDATE proveedores 
+                 SET nombre = %s, telefono = %s, correo = %s, direccion = %s
+                WHERE id_proveedor = %s;""",
+            (proveedor.nombre, proveedor.telefono, proveedor.correo,
+             proveedor.direccion, id_proveedor)
+        )
+    def eliminar_proveedor(self, id_proveedor: int) -> None:
+         with DatabaseManager(self.db_config) as cursor:
+            cursor.execute(
+                "DELETE FROM proveedores WHERE id_proveedor = %s;",
+            (id_proveedor,)
+        )
+    def actualizar_cliente(self, id_cliente: int, cliente: ClienteDTO) -> None:
+        with DatabaseManager(self.db_config) as cursor:
+            cursor.execute(
+            """UPDATE clientes 
+               SET nombre = %s, telefono = %s, correo = %s
+               WHERE id_cliente = %s;""",
+            (cliente.nombre, cliente.telefono, cliente.correo, id_cliente)
+        )
+    def eliminar_cliente(self, id_cliente: int) -> None:
+        with DatabaseManager(self.db_config) as cursor:
+         cursor.execute(
+             "DELETE FROM clientes WHERE id_cliente = %s;",
+            (id_cliente,)
+        )

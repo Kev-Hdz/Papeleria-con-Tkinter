@@ -51,4 +51,35 @@ class ContactoServicio:
         """
         return self.repositorio.consultar_cliente_por_id(id_cliente)
     
+    def actualizar_proveedor(self, id_proveedor: int, datos: ProveedorDTO) -> None:
+       existente = self.repositorio.consultar_proveedor_por_id(id_proveedor)
+       if not existente:
+        raise ValueError(f"No se encontró ningún proveedor con ID {id_proveedor}.")
+       if not datos.nombre.strip():
+        raise ValueError("El nombre del proveedor no puede estar vacío.")
+       self.repositorio.actualizar_proveedor(id_proveedor, datos)
+    
+    def eliminar_proveedor(self, id_proveedor: int) -> None:
+      existente = self.repositorio.consultar_proveedor_por_id(id_proveedor)
+      if not existente:
+        raise ValueError(f"No se encontró ningún proveedor con ID {id_proveedor}.")
+      self.repositorio.eliminar_proveedor(id_proveedor)
+    
+    def actualizar_cliente(self, id_cliente: int, datos: ClienteDTO) -> None:
+      existente = self.repositorio.consultar_cliente_por_id(id_cliente)
+      if not existente:
+        raise ValueError(f"No se encontró ningún cliente con ID {id_cliente}.")
+      if not datos.nombre.strip():
+        raise ValueError("El nombre del cliente no puede estar vacío.")
+      self.repositorio.actualizar_cliente(id_cliente, datos)
+
+    def eliminar_cliente(self, id_cliente: int) -> None:
+      existente = self.repositorio.consultar_cliente_por_id(id_cliente)
+      if not existente:
+        raise ValueError(f"No se encontró ningún cliente con ID {id_cliente}.")
+      self.repositorio.eliminar_cliente(id_cliente)
+    
+
+
+
     
