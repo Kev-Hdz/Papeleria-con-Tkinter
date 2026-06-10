@@ -213,7 +213,15 @@ class VistaProductos(tk.Frame):
                 self._limpiar_campos()
                 self.consultar_productos()
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo eliminar: {str(e)}")
+                if "1451" in str(e):
+                    messagebox.showerror("No se puede eliminar", f"El producto {nombre_producto} tiene ventas registradas.\n"
+                                         "No es posible eliminarlo para conservar el historial")
+                else:
+                    messagebox.showerror("Error", f"No se puede eliminar: {str(e)}")
+
+
+
+                
 
     def _leer_campos(self) -> ProductoDTO:
         """Extrae los valores de la UI y los empaqueta en un ProductoDTO."""
