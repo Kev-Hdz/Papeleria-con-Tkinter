@@ -35,7 +35,10 @@ class ProductoRepositorio:
         Raises:
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
-        query = f"{self._base_query};"
+        
+        query_alterada = self._base_query.replace("WHERE p.fecha_eliminado IS NULL", "")
+
+        query = f"{query_alterada};"
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute(query)
             return [ProductoDTO(**row) for row in cursor.fetchall()]  

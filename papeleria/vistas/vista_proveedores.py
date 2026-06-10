@@ -46,13 +46,18 @@ class VistaProveedores(tk.Frame):
 
         col = tk.Frame(form, bg="#F5F5F0")
         col.pack(side="left", padx=8)
+        tk.Label(col, text="ID:", bg="#F5F5F0",
+                 font=("Segoe UI", 9)).grid(row=0, column=0, sticky="e", pady=4, padx=4)
+        self.ent_ID = tk.Entry(col, width=30, font=("Segoe UI", 10), state="readonly")
+        self.ent_ID.grid(row=0, column=1, sticky="w", pady=4)
+
         campos = [("Nombre:", "ent_nombre"), ("Teléfono:", "ent_telefono"),
                   ("Correo:", "ent_correo"), ("Dirección:", "ent_direccion")]
         for i, (lbl, attr) in enumerate(campos):
             tk.Label(col, text=lbl, bg="#F5F5F0",
-                     font=("Segoe UI", 9)).grid(row=i, column=0, sticky="e", pady=4, padx=4)
+                     font=("Segoe UI", 9)).grid(row=i+1, column=0, sticky="e", pady=4, padx=4)
             ent = tk.Entry(col, width=30, font=("Segoe UI", 10))
-            ent.grid(row=i, column=1, sticky="w", pady=4)
+            ent.grid(row=i+1, column=1, sticky="w", pady=4)
             setattr(self, attr, ent)
 
         btn_frame = tk.Frame(form, bg="#F5F5F0")
@@ -60,6 +65,11 @@ class VistaProveedores(tk.Frame):
         self.btn_registrar = self.ui.boton(btn_frame, "💾 Registrar Proveedor", "#2e7d32",
                       self.registrar_proveedor)
         self.btn_registrar.pack(fill="x", pady=3)
+        self.btn_actualizar=self.ui.boton(btn_frame, "Actualizar", "#1565c0", self.actualizar_proveedor)
+        self.btn_actualizar.pack(fill="x", pady=3)
+        self.btn_eliminar = self.ui.boton(btn_frame, "Eliminar", "#c62828", self.eliminar_proveedor)
+        self.btn_eliminar.pack(fill="x", pady=3)
+
         self.btn_limpiar = self.ui.boton(btn_frame, "🧹 Limpiar", "#546e7a",
                       self.limpiar_campos)
         self.btn_limpiar.pack(fill="x", pady=3)
@@ -79,9 +89,54 @@ class VistaProveedores(tk.Frame):
             messagebox.showerror("Validación", str(e))
         except Exception as e:
             messagebox.showerror("Error del Sistema", str(e))
+    
+    def actualizar_proveedor(self):
+        id_proveedor= self.tabla.obtener_id_seleccionado()
+        if id_proveedor is None:
+            messagebox.showwarning("Aviso", "Selecciona un proveedor de la tabla.")
+            return
+        if not self._validar_campos():
+            return
+        try:
+            dto=self._leer_campos()
+            self.servicio_proveedores.actualizar_proveedor(int(id_proveedor), dto)
+            messagebox.showinfo("Éxito", "Proveedor actualizado correctamente.")
+            self.limpiar_campos()
+            self._rellenar_tabla()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+    
+    def eliminar_proveedor(self):
+        id_proveedor = self.tabla.obtener_id_seleccionado()
+        if id_proveedor is None:
+            messagebox.showwarning("Aviso", "Selecciona un proveedor de la tabla.")
+            return
+        valores = self.tabla.obtener_fila_seleccionada()
+        nombre = str(valores[1])
+        if messagebox.askyesno("Confirmar", f"¿Eliminar al proveedor '{nombre}'?\nEsta acción no se puede deshacer."):
+            try:
+                self.servicio_proveedores.eliminar_proveedor(int(id_proveedor))
+                messagebox.showinfo("Eliminado", "Proveedor eliminado correctamente.")
+                self.limpiar_campos()
+                self._rellenar_tabla()
+            except Exception as e:
+                if "1451" in str(e):
+                    messagebox.showerror(
+                        "No se puede eliminar",
+                        f"El proveedor '{nombre}' tiene productos asociados.\n"
+                        "No es posible eliminarlo mientras tenga productos registrados."
+                    )
+                else:
+                    messagebox.showerror("Error", f"No se pudo eliminar: {str(e)}")
+
+
+
 
     def limpiar_campos(self):
         self.btn_registrar.config(state="normal")  # Habilitamos el botón de registrar al limpiar campos
+        self.ent_ID.config(state="normal")
+        self.ent_ID.delete(0, tk.END)
+        self.ent_ID.config(state="readonly")
         for attr in ["ent_nombre", "ent_telefono", "ent_correo", "ent_direccion"]:
             getattr(self, attr).delete(0, tk.END)
 
@@ -140,3 +195,8 @@ class VistaProveedores(tk.Frame):
         self.ent_telefono.insert(0, valores[2] if valores[2] != "None" else "")
         self.ent_correo.insert(0, valores[3] if valores[3] != "None" else "")
         self.ent_direccion.insert(0, valores[4] if len(valores) > 4 and valores[4] != "None" else "")
+    
+    def refrescar_datos(self):
+        self.limpiar_campos()
+        self.ent_buscador.delete(0, tk.END)
+        self._rellenar_tabla()
