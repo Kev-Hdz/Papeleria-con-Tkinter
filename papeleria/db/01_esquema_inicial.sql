@@ -138,7 +138,9 @@ CREATE TABLE productos (
 
     id_proveedor INT, 
 
-    fecha_registro DATE NOT NULL, 
+    fecha_registro DATE NOT NULL,
+
+    fecha_eliminado DATETIME, 
 
  
 
