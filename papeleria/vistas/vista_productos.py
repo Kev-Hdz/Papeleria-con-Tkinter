@@ -119,10 +119,14 @@ class VistaProductos(tk.Frame):
 
         btn_frame = tk.Frame(form, bg="#f0f4f8")
         btn_frame.pack(side="left", padx=16, anchor="n", pady=6)
-        self.ui.boton(btn_frame, "💾 Registrar",  "#2e7d32", self.registrar_producto).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "✏️ Actualizar", "#1565c0", self.actualizar_producto).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "🗑️ Eliminar",   "#c62828", self.eliminar_producto).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "🧹 Limpiar",    "#546e7a", self._limpiar_campos).pack(fill="x", pady=3)
+        self.btn_registrar = self.ui.boton(btn_frame, "💾 Registrar",  "#2e7d32", self.registrar_producto)
+        self.btn_registrar.pack(fill="x", pady=3)
+        self.btn_actualizar = self.ui.boton(btn_frame, "✏️ Actualizar", "#1565c0", self.actualizar_producto)
+        self.btn_actualizar.pack(fill="x", pady=3)
+        self.btn_eliminar = self.ui.boton(btn_frame, "🗑️ Eliminar",   "#c62828", self.eliminar_producto)
+        self.btn_eliminar.pack(fill="x", pady=3)
+        self.btn_limpiar = self.ui.boton(btn_frame, "🧹 Limpiar",    "#546e7a", self._limpiar_campos)
+        self.btn_limpiar.pack(fill="x", pady=3)
 
 
     # ── Lógica Central ───────────────────────────────────────────────────────
@@ -227,6 +231,7 @@ class VistaProductos(tk.Frame):
 
     # ... [_limpiar_campos, _validar_campos y _seleccionar_fila quedan igual] ...
     def _limpiar_campos(self):
+        self.btn_registrar.config(state="normal")
         for attr in ["ent_ID","ent_nombre", "ent_precio_compra", "ent_precio_venta", "ent_existencia"]:
             getattr(self, attr).delete(0, tk.END)
         self.txt_descripcion.delete("1.0", tk.END)
@@ -252,6 +257,7 @@ class VistaProductos(tk.Frame):
         if not valores:
             return
         
+        self.btn_registrar.config(state="disabled")
         # Limpiamos e insertamos
         self.ent_ID.config(state="normal")
         self.ent_ID.delete(0,tk.END)
