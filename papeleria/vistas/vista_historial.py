@@ -61,7 +61,7 @@ class VistaHistorial(tk.Frame):
         id_venta = int(self.tabla_ventas.item(seleccion[0])["values"][0])
         detalles = self.almacen.consultar_detalles_venta(id_venta)
         
-        #venta = next((v for v in ventas if v.id_venta == id_venta), None)
+        
         if not detalles:
             return
         for row in self.tabla_detalle.get_children():

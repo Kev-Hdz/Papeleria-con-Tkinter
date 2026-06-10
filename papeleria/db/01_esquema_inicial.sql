@@ -335,3 +335,5 @@ INSERT INTO proveedores (nombre, telefono, correo, direccion) VALUES
 INSERT INTO clientes (nombre, telefono, correo) VALUES 
 
 ('CLIENTE GENERICO', 'NA', 'NA');
+ALTER TABLE productos 
+ADD COLUMN fecha_eliminado DATE NULL;
