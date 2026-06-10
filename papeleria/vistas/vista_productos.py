@@ -43,7 +43,9 @@ class VistaProductos(tk.Frame):
         self._limpiar_campos()
         self.ent_buscador.delete(0, tk.END)
         self._cargar_datos()
-        
+        self.ent_ID.config(state="normal")
+        self.ent_ID.delete(0,tk.END) 
+        self.ent_ID.config(state="readonly")
         # Actualizamos las opciones de los Combobox con los datos frescos
         self.combo_categoria["values"] = list(self.categorias_ids.keys())
         self.combo_proveedor["values"] = list(self.proveedores_ids.keys())
@@ -197,12 +199,12 @@ class VistaProductos(tk.Frame):
             messagebox.showwarning("Aviso", "Selecciona un producto de la tabla.")
             return
 
-        valores = self.tabla.item(id_producto)["values"]
-        nombre_producto = str(valores[1]) # Corregido: Era texto, no int
+        valores = self.tabla.obtener_fila_seleccionada()
+        nombre_producto = str(valores[1]) # sCorregido: Era texto, no int
         
         if messagebox.askyesno("Confirmar", f"¿Eliminar el producto '{nombre_producto}'?\nEsta acción no se puede deshacer."):
             try:
-                self.servicio_producto.eliminar_producto(id_producto)
+                self.servicio_producto.eliminar_producto(int(id_producto))
                 messagebox.showinfo("Eliminado", "Producto eliminado correctamente.")
                 self._limpiar_campos()
                 self.consultar_productos()
@@ -251,8 +253,11 @@ class VistaProductos(tk.Frame):
             return
         
         # Limpiamos e insertamos
+        self.ent_ID.config(state="normal")
         self.ent_ID.delete(0,tk.END)
+        print(valores)
         self.ent_ID.insert(0,valores[0])
+        self.ent_ID.config(state="readonly")
         self.ent_nombre.delete(0, tk.END)
         self.ent_nombre.insert(0, valores[1])
         
