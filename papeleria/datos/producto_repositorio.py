@@ -25,6 +25,7 @@ class ProductoRepositorio:
             LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
             LEFT JOIN marcas m ON p.id_marca = m.id_marca
             LEFT JOIN proveedores prov ON p.id_proveedor = prov.id_proveedor
+            WHERE p.fecha_eliminado IS NULL
         """
       
     def consultar(self) -> list[ProductoDTO]:
@@ -87,7 +88,7 @@ class ProductoRepositorio:
                 precio_venta = %s, 
                 existencia = %s, 
                 id_proveedor = %s 
-            WHERE id_producto = %s;
+            WHERE id_producto = %s AND fecha_eliminado IS NULL;
         """
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute(
@@ -112,7 +113,7 @@ class ProductoRepositorio:
         Raises:            
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
-        query = "DELETE FROM productos WHERE id_producto = %s;"
+        query = "UPDATE productos SET fecha_eliminado = CURRENT_TIMESTAMP WHERE id_producto = %s AND fecha_eliminado IS NULL;"
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute(query, (id_producto,))
     
@@ -143,7 +144,7 @@ class ProductoRepositorio:
         if not conditions:
             return []
             
-        query = f"{self._base_query} WHERE " + " AND ".join(conditions) + ";"
+        query = f"{self._base_query} AND " + " AND ".join(conditions) + ";"
         
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute(query, tuple(values))
@@ -158,12 +159,27 @@ class ProductoRepositorio:
         Raises:
             Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
         """
-        query = f"{self._base_query} WHERE p.id_producto = %s;"
+        query = f"{self._base_query} AND p.id_producto = %s AND p.fecha_eliminado IS NULL;"
         with DatabaseManager(self.db_config) as cursor:
             cursor.execute(query, (id_producto,))
             row = cursor.fetchone()
             return ProductoDTO(**row) if row else None
-
+        
+    def esta_activo(self, id_producto: int) -> bool:
+        """Verifica si un producto está activo (no eliminado) por su ID.
+        Args:
+            id_producto (int): El ID del producto a verificar.
+        Returns:
+            bool: True si el producto está activo, False si no existe o está marcado como eliminado.
+        Raises:
+            Error: Si hay un problema de conexión con la base de datos (heredado del DatabaseManager).
+        """
+        query = "SELECT fecha_eliminado FROM productos WHERE id_producto = %s;"
+        with DatabaseManager(self.db_config) as cursor:
+            cursor.execute(query, (id_producto,))
+            row = cursor.fetchone()
+            return row is not None and row["fecha_eliminado"] is None
+        
     def obtener_categorias(self) -> list[dict]:
         """Obtiene el catálogo maestro de categorías
         
