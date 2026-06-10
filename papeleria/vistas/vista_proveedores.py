@@ -57,10 +57,12 @@ class VistaProveedores(tk.Frame):
 
         btn_frame = tk.Frame(form, bg="#F5F5F0")
         btn_frame.pack(side="left", padx=16, anchor="n", pady=6)
-        self.ui.boton(btn_frame, "💾 Registrar Proveedor", "#2e7d32",
-                      self.registrar_proveedor).pack(fill="x", pady=3)
-        self.ui.boton(btn_frame, "🧹 Limpiar", "#546e7a",
-                      self.limpiar_campos).pack(fill="x", pady=3)
+        self.btn_registrar = self.ui.boton(btn_frame, "💾 Registrar Proveedor", "#2e7d32",
+                      self.registrar_proveedor)
+        self.btn_registrar.pack(fill="x", pady=3)
+        self.btn_limpiar = self.ui.boton(btn_frame, "🧹 Limpiar", "#546e7a",
+                      self.limpiar_campos)
+        self.btn_limpiar.pack(fill="x", pady=3)
 
     # ── Métodos de negocio ───────────────────────────────────────────────────
 
@@ -79,6 +81,7 @@ class VistaProveedores(tk.Frame):
             messagebox.showerror("Error del Sistema", str(e))
 
     def limpiar_campos(self):
+        self.btn_registrar.config(state="normal")  # Habilitamos el botón de registrar al limpiar campos
         for attr in ["ent_nombre", "ent_telefono", "ent_correo", "ent_direccion"]:
             getattr(self, attr).delete(0, tk.END)
 
@@ -132,6 +135,7 @@ class VistaProveedores(tk.Frame):
             return
         
         self.limpiar_campos()
+        self.btn_registrar.config(state="disabled")  # Deshabilitamos el botón de registrar al seleccionar una fila
         self.ent_nombre.insert(0, valores[1])
         self.ent_telefono.insert(0, valores[2] if valores[2] != "None" else "")
         self.ent_correo.insert(0, valores[3] if valores[3] != "None" else "")
